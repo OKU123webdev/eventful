@@ -1,0 +1,105 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  
+}
+.bg-color{
+    background-color: #F5F5F5 ;
+}
+
+/*............... INDEX ................*/
+/* hero video */
+.video-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+/* overlay */
+.overlay {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+}
+
+/* login button */
+.login-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  border-radius: 23px;
+  font-family: "Lato", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 300;
+  padding: 0.25rem 0.75rem;
+  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.login-btn:hover {
+  background-color: white;
+  color: black;
+}
+
+/* title */
+.hero-title {
+  font-family: "Purple Purse", serif;
+  font-size: 8rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+}
+
+/* subtitle */
+.hero-subtitle {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* start planning btn*/
+.hero-btn {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 2px solid white;
+  color: white;
+  font-size: 1.25rem;
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  padding: 0.5rem 1.5rem;
+  border-radius: 23px;
+  transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+  background-color: white;
+  color: black;
+  border-color: transparent;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  p {
+    font-size: 1rem;
+  }
+  .btn-primary {
+    padding: 0.4rem 1.2rem;
+  }
+}
+

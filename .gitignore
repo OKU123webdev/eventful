@@ -1,0 +1,14 @@
+# python env file
+venv/
+__pycache__/
+.env
+.vscode/
+
+# Database
+*.sql
+*.dump
+*.backup
+# MySQL Workbench 
+*.mwbin
+*.mwb
+*.myl
