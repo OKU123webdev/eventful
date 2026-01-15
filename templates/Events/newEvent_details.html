@@ -1,0 +1,167 @@
+{% extends "events/events_layout.html" %}
+
+<!-- head - title -->
+{% block title %}New Event{% endblock %}
+<!-- head - googleplaces api -->
+{% block api %}
+<script async
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_api }}&loading=async&libraries=places&callback=initMap"></script>
+{% endblock %}
+
+{# step #}
+{% set step = 2 %}
+
+{# left image #}
+{% block left_img %}{{ url_for('static', filename='images/eventDetails.jpg') }}{% endblock %}
+
+
+<!-- right content (form) -->
+{% block events_heading %}Tell us more about your event{% endblock %}
+
+
+{% block event_content %}
+<form method="POST">
+    {# CSRF #}
+    {{ form.hidden_tag() }}
+    <p class="mb-4">For more personalised suggestions, tell us more details about your event.</p>
+    <!-- EVENT NAME -->
+    <div class="details-form-wrap row g-3">
+        {# row #}
+        <div class="col-12 field">
+            <div class="label-row">
+                {# label #}
+                {{ form.event_name.label(class="form-label") }}
+                {# helper #}
+                <div class="helper helper-inline">e.g. Our Wedding</div>
+            </div>
+            {# form #}
+            {{ form.event_name(class="form-control", id="eventName", value=saved.get("event_name","")) }}
+        </div>
+
+
+        <!-- TOTAL BUDGET -->
+        <div class="col-6 field">
+            <div class="label-row">
+                {# label #}
+                {{ form.overall_budget.label(class="form-label") }}
+                {# helper #}
+                <div class="helper helper-inline">
+                    This can be changed later
+                </div>
+            </div>
+
+            {# input #}
+            <div class="input-group">
+                <span class="input-group-text icon-blue">£</span>
+                {{ form.overall_budget(class="form-control", id="totalBudget", value=saved.get("overall_budget","")) }}
+            </div>
+        </div>
+
+        {# CAPACITY #}
+        <div class="col-6 field">
+            {# label #}
+            <div class="label-row">
+                {{ form.capacity.label(class="form-label") }}
+                <div class="helper helper-inline">This can be changed later</div>
+            </div>
+            {# input #}
+            {{ form.capacity(class="form-control", id="capacity", value=saved.get("capacity","")) }}
+        </div>
+
+        <!-- LOCATION -->
+        <div class="col-6 field">
+            {# label #}
+            <div class="label-row">
+                <label class="form-label">Location</label>
+                {# helper #}
+                <div class="helper helper-inline">
+                    Type and select a city
+                </div>
+            </div>
+            {# google places autocomplete #}
+            <gmp-place-autocomplete class="form-control"></gmp-place-autocomplete>
+
+            {# hidden form field #}
+            {{ form.location_id(id="location_id", value=saved.get("location_id","")) }}
+            <input type="hidden" id="location_name" name="location_name" value="{{ saved.get('location_name','') }}">
+        </div>
+
+
+
+        <!-- DATE -->
+        <div class="field col-6">
+            {# label #}
+            <div class="label-row">
+                {{ form.event_date.label(class="form-label") }}
+                {# helper #}
+                <div class="helper helper-inline">
+                    Add approximate if unknown
+                </div>
+            </div>
+            {# input #}
+            {{ form.event_date(class="form-control", id="date", value=saved.get("event_date","")) }}
+        </div>
+
+
+        {# progress bar #}
+        <div class="col-12">
+            <div class="progress step-progress mt-3">
+                <div class="progress-bar" style="width: 66%;">Step 2</div>
+            </div>
+        </div>
+
+        <!-- ARROW BUTTONS -->
+
+        <div class="col-12 d-flex justify-content-between  align-items-center pt-1">
+            {# BACK #}
+            <button type="button" class="btn-back" onclick="window.location.href='{{ url_for('newEvent_type') }}'">
+                <i class="bi bi-arrow-left pe-1"></i>
+                BACK
+            </button>
+            <!-- SUBMIT -->
+            <button type="submit" class="btn-continue">
+
+                    NEXT
+                <i class="bi bi-arrow-right ps-1"></i>
+                </button>
+                
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function initMap() {
+        const placeAutocomplete = document.querySelector(
+            "gmp-place-autocomplete"
+        );
+
+        const placeID = document.getElementById("location_id");
+
+
+        placeAutocomplete.addEventListener(
+            "gmp-select",
+            async ({ placePrediction }) => {
+                const place = placePrediction.toPlace();
+                await place.fetchFields({
+                    fields: ["displayName", "formattedAddress", "location"],
+                });
+
+                // save location name to session for repopulation
+                let locationName = document.getElementById("location_name");
+
+
+                // populate hidden field with selection
+                placeID.value = placePrediction.placeId;
+                locationName.value = placePrediction.text?.text || "";
+            }
+        );
+
+
+    }
+
+    initMap();
+</script>
+{% endblock scripts %}

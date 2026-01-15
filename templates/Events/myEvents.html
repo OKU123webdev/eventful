@@ -1,0 +1,69 @@
+{% extends "events/events_layout.html" %}
+
+{# left image #}
+{% block left_img %}{{ url_for('static', filename='images/eventDetails.jpg') }}{% endblock %}
+
+{# head - title #}
+{% block title %}New Event{% endblock %}
+
+{# center content #}
+{% block center %} center-content {% endblock %}
+
+{% block steps %}
+    <span class="step-item active">
+        My Events
+    </span>
+    <hr>
+{% endblock %}
+
+{# right content (form) #}
+{% block events_heading %}Lets get planning...{% endblock %}
+
+{# user events selection #}
+{% block event_content %}
+<form method="POST">
+    
+
+
+    <p>Select an event to continue planning or create a new event.</p>
+    <div class="form-wrap">
+        <div class="scroll-events">
+            <ul class="list-group eventType">
+                {% for e in events %}
+                <li class="list-group-item list-group-item-action">
+                    <label class="form-check-label w-100" for="e{{ e.event_id }}">
+                        <input class="form-check-input me-1" type="radio" name="event_id" id="e{{ e.event_id }}"
+                            value="{{ e.event_id }}" required {% if loop.first %}checked{% endif %}>
+                        {{ e.event_name }}
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+
+        <!-- SUBMIT -->
+        <div class="d-flex justify-content-center justify-content-lg-end pt-3">
+            <button type="submit" class="startPlanning_btn">
+                Continue Planning
+            </button>
+        </div>
+
+    </div>
+
+    {# create new event #}
+    <div>
+        <hr>
+        <h2 class="newEvent_txt">Want to plan a new event?</h2>
+        <div class="mt-3">
+            <button type="button" class="newEvent_btn" onclick="window.location.href='{{ url_for('newEvent_type') }}'">
+                Create New Event
+            </button>
+
+        </div>
+    </div>
+
+
+
+</form>
+{% endblock %}

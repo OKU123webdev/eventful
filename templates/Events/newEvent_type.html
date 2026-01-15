@@ -1,0 +1,53 @@
+{% extends "events/events_layout.html" %}
+
+{# head - title #}
+{% block title %}New Event{% endblock %}
+
+{# center content #}
+{% block center %} center-content {% endblock %}
+
+{# step #}
+{% set step = 1 %}
+
+
+{# right content (form) #}
+{% block events_heading %}What type of event are you planning?{% endblock %}
+
+{# event type selection #}
+{% block event_content %}
+<form method="POST">
+
+    <p>Your experience will be tailored to the event type you select.</p>
+    <div class="form-wrap">
+        <ul class="list-group eventType">
+            {% for et in event_types %}
+            <li class="list-group-item list-group-item-action">
+                <label class="form-check-label w-100" for="et{{ et.event_type_id }}">
+                    <input class="form-check-input me-1" type="radio" name="event_type_id" id="et{{ et.event_type_id }}"
+                        value="{{ et.event_type_id }}" required {% if loop.first %}checked{% endif %}>
+                    {{ et.event_type }}
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+
+        {# progress bar #}
+        <div class="progress step-progress mt-3">
+            <div class="progress-bar" style="width: 33%;">Step 1</div>
+        </div>
+
+
+        <!-- SUBMIT -->
+        <div class="d-flex justify-content-center justify-content-lg-end pt-4">
+            <button type="submit" class="btn-continue">
+
+                NEXT
+
+            </button>
+        </div>
+
+
+    </div>
+
+</form>
+{% endblock %}

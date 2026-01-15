@@ -1,0 +1,84 @@
+{% extends "events/events_layout.html" %}
+
+{# head - title #}
+{% block title %}To Do List{% endblock %}
+
+{# center content #}
+{% block center %} center-content {% endblock %}
+
+{# step #}
+{% set step = 3 %}
+
+
+{# left image #}
+{% block left_img %}{{ url_for('static', filename='images/todolist.jpg') }}{% endblock %}
+
+{# right content (form) #}
+{% block events_heading %}What is on your to-do list?{% endblock %}
+
+{# event type selection #}
+{% block event_content %}
+<form method="POST">
+    {# Intro text #}
+
+
+    <p>Based on your event we recommend the following to do list. Please unselect anything you would like to skip!
+    </p>
+    <div class="form-wrap">
+        <div class="todolist pb-4">
+            <div class="todolist-list row g-2">
+                {# gueslist #}
+                <div class="col-6">
+                    <div class="todolist-item">
+                        <label class="todolist-label">Guest List</label>
+                        <input type="checkbox" checked disabled>
+                    </div>
+                </div>
+                {# budget #}
+                <div class="col-6">
+                    <div class="todolist-item">
+                        <label class="todolist-label">Budget</label>
+                        <input type="checkbox" checked disabled>
+                    </div>
+                </div>
+
+                {% for list in vendors %}
+                <div class="col-6">
+                    <div class="todolist-item">
+                        <label class="todolist-label" for="vendor_{{ list.vendor_type_id }}">{{ list.vendor_type }}</label>
+                        <input id="vendor_{{ list.vendor_type_id }}" type="checkbox" name="checklist"
+                            value="{{ list.vendor_type_id }}" checked>
+                    </div>
+                </div> 
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        {# progress bar #}
+        <div class="col-12">
+            <div class="progress step-progress mt-3">
+                <div class="progress-bar" style="width: 100%;">Step 3</div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between  align-items-center pt-1">
+            {# BACK #}
+            <button type="button" class="btn-back" onclick="window.location.href='{{ url_for('newEvent_details') }}'">
+                <i class="bi bi-arrow-left pe-1"></i>
+                BACK
+            </button>
+            <!-- SUBMIT -->
+            <button type="submit" class="btn-continue">
+
+                Start Planning
+                {# <i class="bi bi-arrow-right ps-1"></i> #}
+            </button>
+
+        </div>
+    </div>
+    </div>
+</form>
+{% endblock %}
