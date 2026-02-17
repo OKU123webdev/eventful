@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendor Directory</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Purple+Purse&family=Playfair+Display&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/vendor_interactions.js') }}"></script>
+</head>
+
+<body class="vendor_directory">
+    <div>
+        <!-- NAVBAR -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-md">
+                <span class="navbar-brand mb-0">VENDOR DIRECTORY</span>
+                <div class="nav-links">
+                    <a href="{{ url_for('eventDashboard') }}" class="link-back me-2">Back to event</a>
+                    <a href="{{ url_for('logout') }}" class="link-logout">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- VENDOR CONTENT -->
+        <div class="vendor-content container-md px-3 mt-4">
+            <!-- MY SELECTED VENDORS TABLE -->
+            <div class="selected-vendors">
+                <!-- heading -->
+                <h1>My Selected Vendors</h1>
+
+                <!-- INTRESTED VENDORS  -->
+                <!-- container -->
+                <div id="vendor-table-container" class="myVendors_table table-responsive shadow-sm border rounded"
+                    style="display: {% if selected_vendors %}block{% else %}none{% endif %};">
+
+                    <!-- table start -->
+                    <table class="table table-hover mb-0 custom-vendor-table">
+                        <!-- table head -->
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 50px;"></th>
+                                <th scope="col">Vendor</th>
+                                <th scope="col">Quoted Price</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <!-- table body -->
+                        <tbody id="selected-vendors-tbody">
+                            {% if selected_vendors %}
+                                {% for vendor in selected_vendors %}
+                                    <tr data-vendor-id="{{ vendor.vendor_place_id }}">
+                                        <!-- favourite star -->
+                                        <td class="align-middle text-center">
+                                            <i class="bi bi-star {% if vendor.is_favourite %}fill-star{% endif %} star-icon"
+                                                data-id="{{ vendor.vendor_id }}"></i>
+                                        </td>
+                                        <!-- vendor name -->
+                                        <td class="align-middle">
+                                            <div class="fw-bold text-dark">{{ vendor.vendor_name }}</div>
+                                        </td>
+                                        <!-- quoted price -->
+                                        <td class="align-middle fw-bold">
+                                            {% if vendor.price %} £{{ vendor.price }} {% else %} - {% endif %}
+                                        </td>
+                                        <!-- status -->
+                                        <td class="align-middle fst-italic">{{ vendor.vendor_status }}</td>
+                                        <!-- actions -->
+                                        <td class="align-middle text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button class="btn btn-action view">View</button>
+                                                <button class="btn btn-outline-danger btn-sm remove">Remove</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <!-- table end -->
+                </div>
+
+                <!-- no vendors message -->
+                <p id="no-vendors-msg" style="display: {% if selected_vendors %}none{% else %}block{% endif %};">
+                    You currently have no vendors selected.
+                </p>
+            </div>
+
+            <!-- GOOGLE VENDOR RESULTS -->
+            <div class="vendor-results mt-5">
+                <!-- heading/text -->
+                <h1>Vendor Results</h1>
+                <p>We’ve tailored these results based on your event requirements, helping you find the perfect vendor
+                    for your occasion.
+                </p>
+
+                <!-- vendor cards -->
+                <div class="row">
+                    {% for vendor in vendors %}
+                    <div class="col-12 col-sm-6 col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm border-0" data-vendor-id="{{ vendor.place_id }}">
+                            <!-- vendor image -->
+                            <img src="{{ vendor.image_url if vendor.image_url else url_for('static', filename='images/placeholder.jpg') }}"
+                                class="vendor_img card-img-top" alt="{{ vendor.name }}">
+
+                            <!-- vendor details -->
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-3">
+                                    <!-- vendor name -->
+                                    <h5 class="card-title mb-1 text-dark">{{ vendor.name }}</h5>
+                                    <!-- vendor location -->
+                                    <p class="card-text small text-muted mb-2">{{ vendor.vicinity }}</p>
+                                    <!-- vendor rating -->
+                                    {% if vendor.rating %}
+                                        <p class="card-text small">
+                                            Rating: {{ vendor.rating }} <i class="bi bi-star-fill rating-star"></i>
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                                {# MARK INTRESTED BUTTON #}
+                                {% set is_interested = vendor.place_id in interested_ids %}
+                                <button
+                                    class="btn {{ 'btn-success' if is_interested else 'btn_intrest' }} toggle-interest w-100 mb-2 fw-bold py-2 shadow-sm"
+                                    data-vendor-id="{{ vendor.place_id }}">
+                                    <!-- currently added -->
+                                    {% if is_interested %}
+                                        <i class="bi bi-check-circle me-2"></i>Added
+                                    <!-- currently NOT intrested -->
+                                    {% else %}
+                                        <i class="bi bi-plus-circle me-2"></i>Mark Interested
+                                    {% endif %}
+                                </button>
+
+                                <!-- action buttons -->
+                                <div class="row g-2 mt-1">
+                                    <!-- website button -->
+                                    <div class="col-6">
+                                        <a href="{{ vendor.website_url }}" target="_blank"
+                                            class="btn btn-outline-secondary btn-sm w-100">Website</a>
+                                    </div>
+                                    <!-- map button -->
+                                    <div class="col-6">
+                                        <a href="https://www.google.com/maps/search/?api=1&query={{ vendor.name | urlencode }}"
+                                            target="_blank" class="btn btn-outline-secondary btn-sm w-100">View Map</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- PAGNATION -->
+                <div class="container text-center py-5 mb-5">
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+                        <!-- Back Button -->
+                        {% if current_page > 1 %}
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary pagination-btn">
+                                <i class="bi bi-arrow-left me-2"></i> Back
+                            </a>
+                        {% endif %}
+
+                        <!-- Next Button -->
+                        {% if next_page_token %}
+                            <a href="{{ url_for('vendorDirectory', vendor_type=vendor_type, page_token=next_page_token, page=current_page + 1) }}#results"
+                                class="btn pagination-btn next-btn">
+                                Next Page <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- No more results -->
+                    {% if not next_page_token %}
+                        <div class="mt-4">
+                            <p class="text-muted small">
+                                <i class="bi bi-info-circle me-1"></i> No more results found in this area.
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <!-- current page txt -->
+                    <p class="mt-3 text-muted small">Viewing Page {{ current_page }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

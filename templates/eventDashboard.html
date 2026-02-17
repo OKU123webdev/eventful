@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Dashboard</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Purple+Purse&family=Playfair+Display&family=Lato:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="event-dashboard">
+      <!-- navbar -->
+      <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-md">
+          <span class="navbar-brand mb-0">EVENT DASHBOARD</span>
+          <div class="nav-links">
+            
+            <a href="{{ url_for('homepage') }}" class="link-back me-2"
+              >Back to events</a
+            >
+            <a href="{{ url_for('logout') }}" class="link-logout">Logout</a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- container -->
+      <div class="container pt-4">
+
+        <!-- row -->
+        <div class="row gx-4 gy-4">
+          <!-- left col -->
+          <div class="col-lg-8">
+            <div class="dash-left-wrap p-2">
+              <!-- image -->
+              <div class="dash-img">
+                <img
+                  src="{{ url_for('static', filename='images/dashboard.jpg') }}"
+                  alt="Event image"
+                />
+              </div>
+              <!-- row start-->
+              <div class="row ps-2 pe-2">
+                <!-- LEFT CARDS -->
+                <div class="col-lg-6 col-sm-12">
+                  <!-- EVENT DETAILS -->
+                  <div class="card mt-2 dash-eventDetails">
+                    <h2 class="countdown">
+                      <span class="daysCount">{{ days_to_go }}</span>
+                      <span class="daysToGo">Days to Go</span>
+                    </h2>
+                    <!-- line break -->
+                    <hr class="mb-2" />
+                    <div
+                      class="d-flex justify-content-between align-items-start"
+                    >
+                      <!-- left details -->
+                      <div>
+                        <!-- location -->
+                        <h6 class="card-subtitle mb-2">
+                          <i class="bi bi-geo-alt-fill dash-icon"></i>
+                          Glasgow
+                        </h6>
+
+                        <!-- date -->
+                        <h6 class="card-subtitle">
+                          <i class="bi bi-calendar-week-fill dash-icon"></i>
+                          {{ event.event_date.strftime('%d.%m.%Y') }}
+                        </h6>
+                      </div>
+
+                      <!-- edit details btn -->
+                      <button class="btn editDetails-btn">
+                        <i class="bi bi-pen"></i>
+                        Edit Details
+                      </button>
+                    </div>
+                  </div>
+                  <!-- BUDGET -->
+                  <div class="card mt-2 dash-eventDetails">
+                    <h2 class="dash-budget">
+                      <i class="bi bi-piggy-bank-fill"></i>
+                      <span>Budget Management</span>
+                    </h2>
+                    <h6>Total Spending:</h6>
+                    <div class="progress budget-progress mt-2 mb-2">
+                      <div
+                        class="budget-progress-bar d-flex align-items-center justify-content-center"
+                        style="width: 66%"
+                      >
+                        66%
+                      </div>
+                    </div>
+                    <p>You have £1,120 remaining from your total budget</p>
+                    <button class="btn budget-btn">
+                      Manage your spending
+                      <i class="bi bi-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- RIGHT CARDS -->
+                <div class="col-lg-6 col-sm-12">
+                  <!-- EVENT DETAILS -->
+                  <div class="card mt-2 dash-eventDetails">
+                    <span class="nextTask-title">Next Recommended Task</span>
+                    <!-- icon & next step -->
+                    <div class="m-3 nextTask">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"
+                        />
+                      </svg>
+                      Book your venue
+                    </div>
+                    <p>
+                      Take a look at our vendor directory to find your venue.
+                    </p>
+                    <!-- next step btn -->
+                    <button class="btn nextTask-btn mt-2">
+                      Find your perfect venue
+                      <i class="bi bi-arrow-right"></i>
+                    </button>
+                  </div>
+                  <!-- GUESTLIST -->
+                  <div class="card mt-2 dash-eventDetails">
+                    <h2 class="dash-guestlist">
+                      <i class="bi bi-people-fill"></i>
+                      <span>Guestlist</span>
+                    </h2>
+                    <!-- invite/rsvp -->
+                    <div class="guests">
+                      <div class="guestsNo">
+                        <span class="number">42</span>
+                        <span class="label">Invited</span>
+                      </div>
+
+                      <div class="divider"></div>
+
+                      <div class="guestsNo">
+                        <span class="number">23</span>
+                        <span class="label">RSVP</span>
+                      </div>
+                      
+                    </div>
+
+                    <button class="btn nextTask-btn mt-2">
+                       Guestlist management
+                      <i class="bi bi-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- right col - CHECKLIST -->
+          <div class="col-lg-4">
+            <h1 class="pb-2 text-end event_name">
+                {{ event.event_name }}
+            </h1>
+            <div class="dash-right-wrap">
+              <div class="checklist_card">
+                <div class="checklist_head">TO DO LIST</div>
+                <!-- checklist form -->
+                <form method="POST">
+                  <div class="checklist_body">
+                    
+                    <ul class="checklist_list">
+                      {% for item in checklist_items %}
+                        <li class="checklist_row">
+                          <!-- left side - checkbox/label -->
+                          <label class="checklist_vendor">
+                            <input type="checkbox" name="checklist_id" value="{{ item.checklist_id}}">
+                            <span class="{% if item.is_booked %}checklist_done{% endif %}">
+                              {{ item.vendor_type.vendor_type}}
+                            </span>
+                          </label>
+                          <!-- right side - links -->
+                          <div class="checklist_links">
+                            {% if item.is_booked %}
+                              <span class="checklist_complete">Complete</span>
+                            {% endif %}
+                            <a href="{{ url_for('vendorDirectory') }}?vendor_type={{ item.vendor_type.vendor_type }}" class="vendor_link">
+                              <i class="bi bi-arrow-right-circle-fill"></i>
+                            </a>
+                          </div>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+
+                  <!-- complete buttons -->
+                  <div class="checklist_btns">
+                    <!-- MARK COMPLETE -->
+                    <button class="btn markComplete_btn" type="submit" name="mark_complete">
+                      Mark Complete
+                    </button>
+                    <!-- UNDO COMPLETION -->
+                    <button class="btn undoComplete_btn" type="submit" name="undo_complete">
+                      Undo Completion
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

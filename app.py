@@ -3,10 +3,13 @@ from os import environ as env
 from urllib.parse import quote_plus, urlencode
 from authlib.integrations.flask_client import OAuth
 from dotenv import find_dotenv, load_dotenv
-from flask import Flask, redirect, render_template, session, url_for, request
+from flask import Flask, redirect, render_template, session, url_for, request, jsonify
 from forms import EventDetailsForm
 from datetime import datetime
+from datetime import date
 from database import db
+# ORM - join db queries
+from sqlalchemy.orm import joinedload
 
 
 # enviroments file
@@ -19,11 +22,14 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = ('mysql+pymysql://'+env.get('DB_USER')+':'+quote_plus(env.get('DB_PASSWORD'))+'@'+env.get('DB_HOST')+':'+env.get('DB_PORT')+'/'+env.get('DB_NAME'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app) # Initilise db
-from models import User, Event, EventType, VendorType, EventTypeVendors, EventChecklist
+from models import User, Event, EventType, VendorType, EventTypeVendors, EventChecklist, VendorInteractions
 
 # Secret key
 app.secret_key = env.get("APP_SECRET_KEY")
 GOOGLE_MAPS_API_KEY = env.get("GOOGLE_MAPS_API_KEY")
+
+# Vendor search
+from vendor_search import get_location_data, search_nearby_vendors
 
 # Auth0
 oauth = OAuth(app)
@@ -113,7 +119,9 @@ def my_events():
         selected_event_id = int(request.form["event_id"])
 
         # check belongs to user
-        event = Event.query.filter_by(event_id=selected_event_id, user_id=user_id)
+        event = Event.query.filter_by(event_id=selected_event_id, user_id=user_id).first()
+        if event is None:
+            return redirect(url_for("my_events"))
         
         session["event_id"] = selected_event_id
         return redirect(url_for("eventDashboard"))
@@ -223,6 +231,10 @@ def newEvent_todolist():
         db.session.add(new_event)
         db.session.commit()
 
+        # save event id to go to dashboard
+        session["event_id"] = new_event.event_id
+
+        # update checklist in db
         for vendor_type_id in selected_checklist:
             checklist = EventChecklist(
                 event_id=new_event.event_id,
@@ -231,20 +243,236 @@ def newEvent_todolist():
             db.session.add(checklist)
         db.session.commit()
 
+        # remove old session data
         session.pop("newEvent_typeID", None)
         session.pop("newEvent_details", None)
 
         return redirect(url_for("eventDashboard"))
 
-
-
     return render_template("events/newEvent_todolist.html", vendors=vendors)
 
 
 # EVENT DASHBOARD
-@app.route("/event-dashboard")
+@app.route("/event-dashboard", methods=["GET", "POST"])
 def eventDashboard():
-    return render_template("eventDashboard.html")
+    # check logged in
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session["user_id"]
+
+    # check event_id
+    if "event_id" not in session:
+        # check for event in db
+        has_event = Event.query.filter_by(user_id=user_id).first() is not None
+        return redirect(url_for("my_events" if has_event else "newEvent_type"))
+
+    event_id = session["event_id"]
+
+    # check event_id matches user_id
+    event = Event.query.filter_by(event_id=event_id, user_id=user_id).first()
+    if event is None:
+        session.pop("event_id", None)
+        return redirect(url_for("my_events"))
+    
+     # event countdown
+    days_to_go = None
+    if event.event_date:
+        days_to_go = max(0, (event.event_date - date.today()).days)
+
+
+    # POST: UPDATE COMPLETE
+    if request.method == "POST":
+        selected_ids = request.form.getlist("checklist_id")
+        if selected_ids:
+            items = EventChecklist.query.filter(
+                EventChecklist.checklist_id.in_(selected_ids),
+                EventChecklist.event_id == event_id
+            ).all()
+
+            if "mark_complete" in request.form:
+                for item in items:
+                    item.is_booked = True
+            
+            if "undo_complete" in request.form:
+                for item in items:
+                    item.is_booked = False
+
+            db.session.commit()
+        return redirect(url_for("eventDashboard"))
+    
+    # GET: get checklist items from method
+    checklist_items = (
+        EventChecklist.query
+        .options(joinedload(EventChecklist.vendor_type))
+        .filter_by(event_id=event_id)
+        .order_by(EventChecklist.is_booked.asc(), EventChecklist.checklist_id.asc())
+        .all()
+    )
+    return render_template("eventDashboard.html", event=event, checklist_items=checklist_items, days_to_go=days_to_go)
+    
+# VENDOR DIRECTORY
+from vendor_search import get_location_data, search_nearby_vendors
+
+@app.route("/vendor-directory")
+def vendorDirectory():
+    vendor_type = request.args.get("vendor_type")
+    next_token = request.args.get("page_token")  # page token for refresh results
+    sort_by = request.args.get("sort_by")  # sorting parameter
+    
+    # get results page number
+    current_page = request.args.get("page",1, type=int)
+
+    # redirect if no vendor type
+    if not vendor_type:
+        return redirect(url_for("eventDashboard"))
+    
+    # get event details
+    event_id = session.get("event_id")
+    user_id = session.get("user_id")
+    event = Event.query.filter_by(event_id=event_id, user_id=user_id).first()
+    
+    # get location data
+    location = get_location_data(event.location_id)
+    lat, lng = location if location else (None, None)
+
+    # search nearby vendors
+    vendors, new_page_token = search_nearby_vendors(
+        lat=lat,
+        lng=lng,
+        vendor_type=vendor_type,
+        event_type=event.event_type_rel.event_type,
+        page_token=next_token
+    )
+
+    # get selected vendors
+    selected_vendors = get_selected_vendors(
+        user_id=user_id, 
+        event_id=event_id,
+        sort_by=sort_by
+    )
+
+    # get interested ids 
+    interested_ids = {v.vendor_place_id for v in selected_vendors}
+
+    return render_template(
+        "vendorDirectory.html", 
+        vendors=vendors, 
+        selected_vendors=selected_vendors,
+        interested_ids=interested_ids,
+        vendor_type=vendor_type, 
+        next_page_token=new_page_token,
+        current_page=current_page,
+        gmaps_api_key=GOOGLE_MAPS_API_KEY
+    )
+
+# MARK INTERESTED - vendor interactions table
+from vendor_crud import mark_as_interested, remove_interested_vendor, get_selected_vendors, toggle_favourite
+@app.route("/mark-interested", methods=["POST"])
+def mark_interested_route():
+    # Get data from AJAX request
+    data = request.get_json()
+    place_id = data.get("place_id")
+    vendor_name = data.get("vendor_name")
+    vendor_type_str = data.get("vendor_type") 
+
+    # Get session data
+    user_id = session.get("user_id")
+    event_id = session.get("event_id")
+
+    # validation
+    if not all([place_id, vendor_name, vendor_type_str, user_id, event_id]):
+        return jsonify({
+            "success": False, 
+            "error": "Missing required data."
+        }), 400
+
+    try:
+        # call CRUD function
+        result = mark_as_interested(
+            place_id=place_id, 
+            vendor_name=vendor_name, 
+            vendor_type_name=vendor_type_str, 
+            user_id=user_id, 
+            event_id=event_id
+        )
+
+        if result and hasattr(result, 'vendor_id'):
+            return jsonify({
+                "success": True,
+                "vendor_id": result.vendor_id,
+                "status": "Interested"
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "error": "This vendor is already in your list."
+            }), 400
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# remove from vendor interactions (mark as not interested)
+@app.route('/remove-vendor', methods=['POST'])
+def remove_vendor():
+    data = request.get_json()
+    place_id = data.get('place_id')
+    event_id = session.get('event_id')
+
+    if not event_id or not place_id:
+        return jsonify({"success": False, "message": "Missing info"}), 400
+
+    # Call the function using your model's logic
+    success = remove_interested_vendor(event_id, place_id)
+    
+    return jsonify({"success": success})
+
+# TOGGLE FAVOURITE (vendor interactions table)
+from vendor_crud import toggle_favourite
+@app.route("/toggle-favourite/<int:vendor_id>", methods=["POST"])
+def favourite(vendor_id):
+    try:
+        # call crud function
+        toggle_favourite(vendor_id)
+
+        # get updated db value
+        vendor = VendorInteractions.query.get(vendor_id)
+        return jsonify({
+            "success": True,
+            "is_favourite": vendor.is_favourite
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False, "error": str(e) }), 400
+        
+
+
+
+
+@app.route("/test-vendor-search")
+def test_vendor_search():
+    # EXAMPLE place_id (Glasgow city centre)
+    place_id = "ChIJ685WIFYViEgRHlHvBbiD5nE"  # Glasgow
+
+    lat_lng = get_location_data(place_id)
+    if not lat_lng:
+        return {"error": "Could not get location"}
+
+    lat, lng = lat_lng
+
+    vendors = search_nearby_vendors(
+        lat=lat,
+        lng=lng,
+        vendor_type="Venue",
+        event_type="Wedding"
+    )
+
+    return {
+        "count": len(vendors),
+        "vendors": vendors[:5]  # limit output
+    }
+
+    
 
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
