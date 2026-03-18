@@ -38,7 +38,6 @@
             {{ form.event_name(class="form-control", id="eventName", value=saved.get("event_name","")) }}
         </div>
 
-
         <!-- TOTAL BUDGET -->
         <div class="col-6 field">
             <div class="label-row">
@@ -86,8 +85,6 @@
             <input type="hidden" id="location_name" name="location_name" value="{{ saved.get('location_name','') }}">
         </div>
 
-
-
         <!-- DATE -->
         <div class="field col-6">
             {# label #}
@@ -102,7 +99,6 @@
             {{ form.event_date(class="form-control", id="date", value=saved.get("event_date","")) }}
         </div>
 
-
         {# progress bar #}
         <div class="col-12">
             <div class="progress step-progress mt-3">
@@ -111,7 +107,6 @@
         </div>
 
         <!-- ARROW BUTTONS -->
-
         <div class="col-12 d-flex justify-content-between  align-items-center pt-1">
             {# BACK #}
             <button type="button" class="btn-back" onclick="window.location.href='{{ url_for('newEvent_type') }}'">
@@ -132,15 +127,19 @@
 {% endblock %}
 
 {% block scripts %}
+
+<!-- GOOGLE MAPS SCRIPT -->
 <script>
+    // gmaps autocomplete
     async function initMap() {
         const placeAutocomplete = document.querySelector(
             "gmp-place-autocomplete"
         );
 
+        // hidden field to store place id
         const placeID = document.getElementById("location_id");
 
-
+        // check when user selects
         placeAutocomplete.addEventListener(
             "gmp-select",
             async ({ placePrediction }) => {
@@ -149,17 +148,14 @@
                     fields: ["displayName", "formattedAddress", "location"],
                 });
 
-                // save location name to session for repopulation
+                // save location name to session
                 let locationName = document.getElementById("location_name");
-
 
                 // populate hidden field with selection
                 placeID.value = placePrediction.placeId;
                 locationName.value = placePrediction.text?.text || "";
             }
         );
-
-
     }
 
     initMap();

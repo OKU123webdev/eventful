@@ -9,7 +9,6 @@
 {# step #}
 {% set step = 3 %}
 
-
 {# left image #}
 {% block left_img %}{{ url_for('static', filename='images/todolist.jpg') }}{% endblock %}
 
@@ -20,14 +19,11 @@
 {% block event_content %}
 <form method="POST">
     {# Intro text #}
-
-
-    <p>Based on your event we recommend the following to do list. Please unselect anything you would like to skip!
-    </p>
+    <p>Based on your event we recommend the following to do list. Please unselect anything you would like to skip!</p>
     <div class="form-wrap">
         <div class="todolist pb-4">
             <div class="todolist-list row g-2">
-                {# gueslist #}
+                {# guestlist #}
                 <div class="col-6">
                     <div class="todolist-item">
                         <label class="todolist-label">Guest List</label>
@@ -42,6 +38,7 @@
                     </div>
                 </div>
 
+                <!-- recommended vendors -->
                 {% for list in vendors %}
                 <div class="col-6">
                     <div class="todolist-item">
@@ -51,11 +48,8 @@
                     </div>
                 </div> 
                 {% endfor %}
-
             </div>
-
         </div>
-
 
         {# progress bar #}
         <div class="col-12">
@@ -72,11 +66,8 @@
             </button>
             <!-- SUBMIT -->
             <button type="submit" class="btn-continue">
-
                 Start Planning
-                {# <i class="bi bi-arrow-right ps-1"></i> #}
             </button>
-
         </div>
     </div>
     </div>

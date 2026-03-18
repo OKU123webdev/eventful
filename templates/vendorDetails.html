@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ vendor.name }} - Details</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Google fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Purple+Purse&family=Playfair+Display&family=Lato:wght@300;400;700&display=swap"rel="stylesheet" />
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+
+<body class="vendor_details_page">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-md">
+            <span class="navbar-brand mb-0">VENDOR DETAILS</span>
+            <!-- nav links -->
+            <div class="nav-links ms-auto">
+                <a href="{{ url_for('vendorDirectory', vendor_type=request.args.get('vendor_type', 'Venue')) }}"
+                    class="link-back me-3">Back to my event</a>
+                <a href="{{ url_for('logout') }}" class="link-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- back button -->
+    <a class="back-btn" onclick="history.back()">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+
+    <!-- MAIN CONTENT -->
+    <div class="container py-3">
+        <div class="vendorDetails_headerRow">
+            <div>
+                <!-- vendor title -->
+                <h1 class="vendorDetails_title">{{ vendor.name }}</h1>
+                <!-- vendor rating -->
+                <div class="vendorDetails_ratingRow">
+                    {% if vendor.rating %}
+                    <span class="vendorDetails_ratingText">{{ vendor.rating }}
+                        <i class="bi bi-star-fill vendorDetails_star"></i></span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- favourite button -->
+            <div class="vendorDetails_favouriteWrap">
+                <!-- vendor in database -->
+                {% if interaction %}
+                <form method="POST">
+                    <input type="hidden" name="action" value="toggle_favourite" />
+                    <button type="submit" class="vendorDetails_favouriteBtn">
+                        {% if interaction.is_favourite %}
+                        <i class="bi bi-star-fill"></i>
+                        {% else %}
+                        <i class="bi bi-star"></i>
+                        {% endif %} Favourite
+                    </button>
+                </form>
+                {% else %}
+                <!-- vendor NOT in db -->
+                <button type="button" class="vendorDetails_favouriteBtn vendorDetails_favouriteBtn_disabled" disabled>
+                    <i class="bi bi-star"></i> Favourite
+                </button>
+                <div class="vendorDetails_favouriteHint">
+                    Add to My Planning to enable.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- TOP ROW -->
+        <div class="row g-4">
+            <!-- LEFT CARD -->
+            <div class="col-lg-7">
+                <div class="card vendorDetails_card">
+                    <!-- vendor image -->
+                    <img src="{{ vendor.image_url if vendor.image_url else url_for('static', filename='images/placeholder.jpg') }}" class="vendorDetails_photo" alt="{{ vendor.name }}" />
+
+                    <!-- card body -->
+                    <div class="vendorDetails_cardBody">
+                        <!-- DESCRIPTION -->
+                        <h5 class="mb-3 vendorDetails_sectionTitle">Description</h5>
+                        <p class="mb-3">
+                            {% if vendor.description %} {{ vendor.description }} {% else %}
+                            No description available yet. {% endif %}
+                        </p>
+
+                        <!-- line break -->
+                        <hr class="my-4" />
+
+                        <!-- REVIEW CAROUSEL -->
+                        <div class="vendorDetails_reviewsBlock mt-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <!-- review title -->
+                                <h5 class="mb-0 vendorDetails_sectionTitle">Reviews</h5>
+
+                                {% if vendor.reviews and vendor.reviews|length > 1 %}
+                                <!-- left button -->
+                                <div class="vendorDetails_reviewControls">
+                                    <button class="btn vendorDetails_reviewBtn" type="button"
+                                        data-bs-target="#reviewsCarousel" data-bs-slide="prev"
+                                        aria-label="Previous review">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+
+                                    <!-- right button -->
+                                    <button class="btn vendorDetails_reviewBtn" type="button"
+                                        data-bs-target="#reviewsCarousel" data-bs-slide="next" aria-label="Next review">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- carousel content -->
+                            {% if vendor.reviews and vendor.reviews|length > 0 %}
+                            <div id="reviewsCarousel" class="carousel slide" data-bs-ride="false">
+                                <div class="carousel-inner">
+                                    <!-- review cards -->
+                                    {% for r in vendor.reviews %}
+                                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                        <div class="vendorDetails_reviewCard">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <div>
+                                                    <!-- author name -->
+                                                    <div class="vendorDetails_reviewAuthor">
+                                                        {{ r.author_name if r.author_name else 'Google
+                                                        review' }}
+                                                    </div>
+                                                    <!-- review description -->
+                                                    {% if r.relative_time_description %}
+                                                    <!-- review time -->
+                                                    <div class="vendorDetails_reviewTime">
+                                                        {{ r.relative_time_description }}
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- review rating -->
+                                                {% if r.rating %}
+                                                <div class="vendorDetails_reviewRating">
+                                                    {{ r.rating }}★
+                                                </div>
+                                                {% endif %}
+                                            </div>
+
+                                            <!-- no reviews avaliable -->
+                                            <div class="vendorDetails_reviewText">
+                                                {{ r.text if r.text else 'No review text available.'
+                                                }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <p class="mb-0">No reviews available yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT CARD - contact/map -->
+            <div class="col-lg-5">
+                <div class="card vendorDetails_card">
+                    <div class="vendorDetails_cardBody">
+                        <p class="mb-2">
+                            <!-- no address -->
+                            <i class="bi bi-geo-alt vendorDetails_infoIcon"></i>
+                            {{ vendor.address if vendor.address else 'Address not available'
+                            }}
+                        </p>
+
+                        <!-- phone number -->
+                        {% if vendor.phone %}
+                        <p class="mb-2">
+                            <i class="bi bi-telephone vendorDetails_infoIcon"></i>
+                            {{ vendor.phone }}
+                        </p>
+                        {% endif %} {% if vendor.website_url %}
+                        <!-- vendor website -->
+                        <p class="mb-3">
+                            <i class="bi bi-globe2 vendorDetails_infoIcon"></i>
+                            <a href="{{ vendor.website_url }}" target="_blank" rel="noopener">
+                                Visit website
+                            </a>
+                        </p>
+                        {% endif %}
+
+                        <!-- gmaps map -->
+                        <div class="vendorDetails_googleMaps">
+                            <iframe
+                                src="{{ google_maps }}"
+                                width="100%"
+                                height="100%"
+                                style="border:0;"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY PLANNING -->
+        <div class="row g-4 mt-1">
+            <div class="col-12">
+                <div class="card vendorDetails_card">
+                    <div class="vendorDetails_cardBody">
+                        <h5 class="mb-3 vendorDetails_sectionTitle">My Planning</h5>
+
+                        <!-- BEFORE ADDED TO DATABASE -->
+                        {% if not interaction %}
+                        <div class="vendorDetails_helpBox mb-3">
+                            Add this vendor to your plan to track status, notes and quotes.
+                        </div>
+
+                        <!-- VENDOR INTERACTION FORM -->
+                        <form method="POST">
+                            <input type="hidden" name="action" value="create_interaction" />
+                            <!-- set intrest -->
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-6">
+                                    <label class="form-label">Set initial status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="Interested" selected>Interested</option>
+                                        <option value="Contacted">Contacted</option>
+                                        <option value="Booked">Booked</option>
+                                    </select>
+                                </div>
+                                <!-- submit -->
+                                <div class="col-md-6">
+                                    <button type="submit" class="btn vendorDetails_saveBtn w-100">
+                                        Add to My Planning
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- AFTER EXSIST IN DB -->
+                        {% else %}
+
+                        <!-- interaction form -->
+                        <form method="POST">
+                            <input type="hidden" name="action" value="update_interaction" />
+                            <div class="row g-3">
+                                <!-- status dropdown -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Status</label>
+                                    <select name="status" class="form-select">
+                                        <!-- intrested -->
+                                        <option value="Interested" {% if interaction.vendor_status == "Interested" %}selected{% endif %}>
+                                            Interested
+                                        </option>
+
+                                        <!-- contacted -->
+                                        <option value="Contacted" {% if interaction.vendor_status == "Contacted" %}selected{% endif %}>
+                                            Contacted
+                                        </option>
+
+                                        <!-- booked -->
+                                        <option value="Booked" {% if interaction.vendor_status == "Booked" %}selected{% endif %}>
+                                            Booked
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- quoted price -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Quoted price</label>
+                                    <div class="input-group vendorDetails_currencyGroup">
+                                        <span class="input-group-text">£</span>
+                                        <input type="number" name="price" class="form-control"
+                                            value="{{ interaction.price if interaction.price else '' }}" />
+                                    </div>
+                                </div>
+
+                                <!-- notes -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Notes</label>
+                                    <textarea name="notes" class="form-control" rows="3">{{ interaction.user_notes or '' }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- submit -->
+                            <div class="mt-3">
+                                <button type="submit" class="btn vendorDetails_saveBtn w-100">
+                                    Save changes
+                                </button>
+                            </div>
+                        </form>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="vendorDetails_footer text-center">
+        <span>Eventful</span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

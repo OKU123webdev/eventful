@@ -38,8 +38,8 @@
       <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container-md">
           <span class="navbar-brand mb-0">EVENT DASHBOARD</span>
+          <!-- nav links -->
           <div class="nav-links">
-            
             <a href="{{ url_for('homepage') }}" class="link-back me-2"
               >Back to events</a
             >
@@ -48,9 +48,13 @@
         </div>
       </nav>
 
+      <!-- back button -->
+      <a class="back-btn" onclick="history.back()">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+
       <!-- container -->
       <div class="container pt-4">
-
         <!-- row -->
         <div class="row gx-4 gy-4">
           <!-- left col -->
@@ -69,6 +73,7 @@
                 <div class="col-lg-6 col-sm-12">
                   <!-- EVENT DETAILS -->
                   <div class="card mt-2 dash-eventDetails">
+                    <!-- countdown -->
                     <h2 class="countdown">
                       <span class="daysCount">{{ days_to_go }}</span>
                       <span class="daysToGo">Days to Go</span>
@@ -78,7 +83,6 @@
                     <div
                       class="d-flex justify-content-between align-items-start"
                     >
-                      <!-- left details -->
                       <div>
                         <!-- location -->
                         <h6 class="card-subtitle mb-2">
@@ -107,19 +111,23 @@
                       <span>Budget Management</span>
                     </h2>
                     <h6>Total Spending:</h6>
+                    <!-- progress bar -->
                     <div class="progress budget-progress mt-2 mb-2">
                       <div
                         class="budget-progress-bar d-flex align-items-center justify-content-center"
-                        style="width: 66%"
+                        style="width: {{ spend_percent }}%"
                       >
-                        66%
+                        {{ spend_percent }}%
                       </div>
                     </div>
-                    <p>You have £1,120 remaining from your total budget</p>
-                    <button class="btn budget-btn">
+                    <!-- remaining budget -->
+                    <p>You have £{{ "%.2f"|format(remaining_budget) }} remaining from your total budget.</p>
+                    <!-- budget management link -->
+                    <a href="{{ url_for('budgetPlanner', tab='plan') }}" class="btn budget-btn">
                       Manage your spending
                       <i class="bi bi-arrow-right"></i>
-                    </button>
+                    </a>
+
                   </div>
                 </div>
 
@@ -140,16 +148,26 @@
                           d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"
                         />
                       </svg>
-                      Book your venue
+                      <!-- next checklist item -->
+                      {% if next_item %}
+                      {{ next_item.vendor_type.vendor_type }}
+                      {% else %}
+                        All tasks complete
+                      {% endif %}
                     </div>
                     <p>
-                      Take a look at our vendor directory to find your venue.
+                      <!-- checklist item link -->
+                      {% if next_item %}
+                        Take a look at our vendor directory to find your {{ next_item.vendor_type.vendor_type|lower }}.
+                      {% else %}
+                        Congratulations! You have successfully planned your event.
+                      {% endif %}
                     </p>
                     <!-- next step btn -->
-                    <button class="btn nextTask-btn mt-2">
-                      Find your perfect venue
+                    <a href="{{ url_for('vendorDirectory') }}?vendor_type={{ next_item.vendor_type.vendor_type }}" class="btn nextTask-btn mt-2">
+                      Find your perfect {{ next_item.vendor_type.vendor_type | lower }}
                       <i class="bi bi-arrow-right"></i>
-                    </button>
+                    </a>
                   </div>
                   <!-- GUESTLIST -->
                   <div class="card mt-2 dash-eventDetails">
@@ -160,19 +178,22 @@
                     <!-- invite/rsvp -->
                     <div class="guests">
                       <div class="guestsNo">
+                        <!-- invited -->
                         <span class="number">42</span>
                         <span class="label">Invited</span>
                       </div>
 
+                      <!-- divider -->
                       <div class="divider"></div>
 
+                      <!-- rsvp -->
                       <div class="guestsNo">
                         <span class="number">23</span>
                         <span class="label">RSVP</span>
                       </div>
-                      
                     </div>
 
+                    <!-- guestline link -->
                     <button class="btn nextTask-btn mt-2">
                        Guestlist management
                       <i class="bi bi-arrow-right"></i>
@@ -189,26 +210,29 @@
             </h1>
             <div class="dash-right-wrap">
               <div class="checklist_card">
+                <!-- checlist heading -->
                 <div class="checklist_head">TO DO LIST</div>
                 <!-- checklist form -->
                 <form method="POST">
                   <div class="checklist_body">
-                    
                     <ul class="checklist_list">
                       {% for item in checklist_items %}
                         <li class="checklist_row">
                           <!-- left side - checkbox/label -->
                           <label class="checklist_vendor">
                             <input type="checkbox" name="checklist_id" value="{{ item.checklist_id}}">
-                            <span class="{% if item.is_booked %}checklist_done{% endif %}">
+                            <!-- vendor name -->
+                            <span class="{% if item.is_complete %}checklist_done{% endif %}">
                               {{ item.vendor_type.vendor_type}}
                             </span>
                           </label>
-                          <!-- right side - links -->
+                          <!-- right side  -->
                           <div class="checklist_links">
-                            {% if item.is_booked %}
+                            <!-- complete -->
+                            {% if item.is_complete %}
                               <span class="checklist_complete">Complete</span>
                             {% endif %}
+                            <!-- link to directory -->
                             <a href="{{ url_for('vendorDirectory') }}?vendor_type={{ item.vendor_type.vendor_type }}" class="vendor_link">
                               <i class="bi bi-arrow-right-circle-fill"></i>
                             </a>

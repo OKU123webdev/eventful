@@ -1,0 +1,154 @@
+{% extends "Budget/budgetPlanner_layout.html" %}
+{% block title %}Budget – My Spending{% endblock %}
+
+{% block content %}
+
+<!-- heading -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="nextTask-title mb-0">My Spending</h2>
+</div>
+<!-- intro -->
+<p class="text-muted mb-4" style="font-family:'Lato', sans-serif;">
+    Log payments and track your event spending.
+</p>
+
+
+<!-- ADD SPENDING SECTION -->
+<div class="card dash-eventDetails mb-4">
+    <div class="card-body">
+        <!-- add spending form -->
+        <form method="POST" action="{{ url_for('budgetPlanner', tab='spending') }}">
+            <input type="hidden" name="action" value="add_spending">
+            <div class="row g-3 align-items-end">
+                <!-- Description -->
+                <div class="col-md-6">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" placeholder="e.g. Deposit payment"
+                        required>
+                </div>
+
+                <!-- Amount -->
+                <div class="col-md-4">
+                    <label class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">£</span>
+                        <input type="number" name="amount" step="0.01" class="form-control" required>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn nextTask-btn w-100">
+                        Add
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- SPENDING TABLE -->
+<div class="card dash-eventDetails">
+    <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+            <!-- table heading -->
+            <thead class="myVendors_table">
+                <tr>
+                    <th>Description</th>
+                    <th>Date Added</th>
+                    <th>Amount</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+
+            <!-- table body -->
+            <tbody>
+                <!-- no spending -->
+                {% if spending_items|length == 0 %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        No spending logged yet.
+                    </td>
+                </tr>
+
+                <!-- spending exsists -->
+                {% else %}
+
+                {% for item in spending_items %}
+                <tr>
+                    <!-- expense description -->
+                    <td>
+                        {{ item.description }}
+                    </td>
+
+                    <!-- date added -->
+                    <td class="text-muted small">
+                        {{ item.created_at.strftime('%d %b %Y') if item.created_at }}
+                    </td>
+
+                    <!-- expense amount -->
+                    <td class="fw-bold spending-amount">
+                        {{ "%.2f"|format(item.amount) }}
+                    </td>
+
+                    <!-- remove expense -->
+                    <td class="text-end">
+                        <form method="POST" action="{{ url_for('budgetPlanner', tab='spending') }}" class="d-inline">
+
+                            <input type="hidden" name="action" value="delete_spending">
+                            <input type="hidden" name="spending_id" value="{{ item.spending_id }}">
+
+                            <button type="submit" class="btn btn-action">
+                                Remove
+                            </button>
+
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+
+            <!-- total -->
+            {% if spending_items|length > 0 %}
+            <tfoot>
+                <tr>
+                    <th colspan="2" class="text-end">Total Spent:</th>
+                    <th colspan="2" class="fw-bold" id="totalSpent">
+                        £0.00
+                    </th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<!-- SPENDING TOTAL SCRIPT -->
+<script>
+    const spendingAmounts = document.querySelectorAll('.spending-amount');
+    const totalSpent = document.getElementById('totalSpent');
+
+    function updateTotalSpent() {
+    let total = 0;
+
+    // spending calc
+    spendingAmounts.forEach(amountElement => {
+        const value = parseFloat(amountElement.textContent);
+        if (!isNaN(value)) {
+        total += value;
+        }
+    });
+
+    totalSpent.textContent = "£" + total.toFixed(2);
+    }
+
+    updateTotalSpent();
+
+</script>
+
+
+{% endblock %}

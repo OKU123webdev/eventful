@@ -1,0 +1,141 @@
+{% extends "Budget/budgetPlanner_layout.html" %}
+
+{% block title %}Budget Planner – Plan{% endblock %}
+
+{% block content %}
+
+<!-- TOP SUMMARY -->
+<div class="card dash-eventDetails mb-4 p-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <!-- overall budget -->
+    <div>
+      <div class="text-muted" style="font-family:'Lato',sans-serif;">
+        Overall Event Budget
+      </div>
+      <h3 class="mb-0" style="font-family:'Playfair Display',serif;">
+        £{{ "%.2f"|format(event.overall_budget or 0) }}
+      </h3>
+    </div>
+
+    <!-- remaining budget -->
+    <div class="text-end">
+      <div class="text-muted" style="font-family:'Lato',sans-serif;">
+        Remaining
+      </div>
+      <h4 id="remainingAmount" class="mb-0">
+        £0.00
+      </h4>
+    </div>
+  </div>
+
+</div>
+
+<!-- allocate budget -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="nextTask-title mb-0">Allocate Your Budget</h2>
+  <button class="btn nextTask-btn" type="submit" form="budgetPlanForm">
+    Save <i class="bi bi-check2"></i>
+  </button>
+</div>
+
+<!-- vendor budgets form -->
+<form id="budgetPlanForm" method="POST" action="{{ url_for('budgetPlanner', tab='plan') }}">
+  <div class="card dash-eventDetails">
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle">
+        <!-- table head -->
+        <thead class="myVendors_table">
+          <tr>
+            <th>Vendor Type</th>
+            <th style="width: 260px;">Target Budget</th>
+          </tr>
+        </thead>
+
+        <!-- table body -->
+        <tbody>
+          {% for vt in event_vendor_types %}
+            {% set existing = vendor_budgets.get(vt.vendor_type_id) %}
+            <tr>
+              <!-- vendor type name -->
+              <td>{{ vt.vendor_type }}</td>
+              <!-- price input -->
+              <td>
+                <div class="input-group">
+                  <span class="input-group-text"
+                        style="background: var(--navy); color: white; border: none;">
+                    £
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    name="budget_{{ vt.vendor_type_id }}"
+                    class="form-control budget-input"
+                    placeholder="0.00"
+                    value="{% if existing and existing.target_budget is not none %}{{ "%.2f"|format(existing.target_budget) }}{% endif %}"
+                  >
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+
+          <!-- TOTAL ROW -->
+          <tr style="background:#f8f4e9;">
+            <td class="fw-bold">Total Allocated</td>
+            <td class="fw-bold">
+              £<span id="totalAllocated">0.00</span>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</form>
+
+
+<!-- TOTAL SCRIPT -->
+<script>
+  const inputs = document.querySelectorAll('.budget-input');
+  const totalAllocated = document.getElementById('totalAllocated');
+  const remainingAmount = document.getElementById('remainingAmount');
+
+  const overallBudget = {{ (event.overall_budget or 0)|float }};
+
+  function updateTotals() {
+    let total = 0;
+
+    // add totals
+    inputs.forEach(input => {
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        total += value;
+      }
+    });
+
+    // remaining calc
+    const remainingValue = overallBudget - total;
+
+    // update display
+    totalAllocated.textContent = total.toFixed(2);
+    remainingAmount.textContent = "£" + remainingValue.toFixed(2);
+
+    // update colour
+    remainingAmount.style.color =
+      remainingValue < 0 ? "var(--red)" : "var(--navy)";
+
+    // planning insights
+    if (typeof loadPlanInsights === "function") loadPlanInsights();
+  }
+
+  // update after every input change
+  inputs.forEach(input => {
+    input.addEventListener('input', updateTotals);
+  });
+
+  updateTotals();
+</script>
+
+
+{% endblock %}

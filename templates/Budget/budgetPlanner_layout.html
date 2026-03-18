@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Budget Planner{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Purple+Purse&family=Playfair+Display&family=Lato:wght@300;400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  
+  <body data-tab="{{ active_tab }}" data-overall-budget="{{ (event.overall_budget or 0)|float }}">
+    <div class="event-dashboard">
+        <!-- NAVBAR -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-md">
+                <span class="navbar-brand mb-0">BUDGET PLANNER</span>
+
+                <div class="nav-links">
+                    <a href="{{ url_for('eventDashboard', event_id=event.event_id) }}" class="link-back me-2">
+                    Back to my event
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="link-logout">Logout</a>
+                </div>
+            </div>
+        </nav>
+        <!-- back button -->
+        <a class="back-btn" onclick="history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+
+        <!-- HEADER SECTION -->
+        <div class="container pt-4 pb-4">
+            <!-- event details -->
+            <div class="d-flex justify-content-between align-items-end mb-3">
+                <h1 class="event_name mb-0">{{ event.event_name }}</h1>
+                
+            </div>
+            <!-- PLAN/CREATE/MYSPENDING buttons -->
+            <div class="row g-3 mb-4">
+                <!-- plan -->
+                <div class="col-lg-4">
+                    <a class="budgetTab {% if active_tab == 'plan' %}budgetTab-active{% endif %}" href="{{ url_for('budgetPlanner', tab='plan') }}">
+                        <!-- icon -->
+                        <div class="budgetTab-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div>
+                            <!-- title -->
+                            <div class="budgetTab-title">Plan</div>
+                            <!-- subtitle -->
+                            <div class="budgetTab-subtitle">Allocate your budget for each vendor</div>
+                        </div>
+                    </a>
+                </div>
+                <!-- compare -->
+                <div class="col-lg-4">
+                    <a
+                    class="budgetTab {% if active_tab == 'compare' %}budgetTab-active{% endif %}"
+                    href="{{ url_for('budgetPlanner', tab='compare') }}"
+                    >
+                    <div class="budgetTab-icon"><i class="bi bi-bar-chart-line"></i></div>
+                    <div>
+                        <div class="budgetTab-title">Compare</div>
+                        <div class="budgetTab-subtitle">Review quotes before you book</div>
+                    </div>
+                    </a>
+                </div>
+                <!-- my spending -->
+                <div class="col-lg-4">
+                    <a
+                    class="budgetTab {% if active_tab == 'spending' %}budgetTab-active{% endif %}"
+                    href="{{ url_for('budgetPlanner', tab='spending') }}"
+                    >
+                    <div class="budgetTab-icon"><i class="bi bi-cash-coin"></i></div>
+                    <div>
+                        <div class="budgetTab-title">My Spending</div>
+                        <div class="budgetTab-subtitle">Log payments and track progress</div>
+                    </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="row gx-4 gy-4">
+                <!-- left main -->
+                <div class="col-lg-8">
+                    <div class="dash-left-wrap p-3">
+                    {% block content %}{% endblock %}
+                    </div>
+                </div>
+
+                <!-- right insights -->
+                <div class="col-lg-4">
+                    <div class="dash-right-wrap">
+                        <div class="checklist_card">
+                            <div class="checklist_head">BUDGET INSIGHTS</div>
+                            <div class="p-3" style="background:#FBFAF8;" id="budgetInsights">
+                                <p class="mb-0 text-muted" style="font-family:'Lato',sans-serif;">
+                                    Insights will appear here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS: toggle tooltip -->
+    <script>
+    // update tooltip
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
+
+    // generate ai button
+    const aiBtn = document.getElementById("aiBtn");
+    const insightsBox = document.getElementById("budgetInsights");
+
+    // check tab 
+    const currentTab = document.body.dataset.tab;
+
+    // PLANNING INSIGHTS
+    function loadPlanInsights() {
+        const insightsBox = document.getElementById("budgetInsights");
+        const totalAllocatedElement = document.getElementById("totalAllocated");
+        const remainingAmountElement = document.getElementById("remainingAmount");
+        const budgetInputs = document.querySelectorAll(".budget-input");
+
+        // return if missing elements
+        if (!insightsBox || !totalAllocatedElement || !remainingAmountElement) return;
+
+        // text conversion
+        const totalAllocated = parseFloat(totalAllocatedElement.textContent) || 0;
+
+        const remainingText = remainingAmountElement.textContent
+            .replace("£", "")
+            .replace(",", "");
+        const remainingBudget = parseFloat(remainingText) || 0;
+
+        let plannedCategoryCount = 0;
+
+        // count total inputs
+        budgetInputs.forEach(input => {
+            if (input.value && parseFloat(input.value) > 0) {
+                plannedCategoryCount++;
+            }
+        });
+
+        const totalCategoryCount = budgetInputs.length;
+
+        // insights HTML 
+        insightsBox.innerHTML = `
+            <div class="mb-3 p-2 border rounded" style="background:#fff;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Allocation Summary</strong>
+                        <div class="small text-muted">Plan check based on your current inputs</div>
+                    </div>
+                    <span class="badge ${remainingBudget < 0 ? "bg-danger" : "bg-success"}">
+                        ${remainingBudget < 0 ? "Over allocated" : "On track"}
+                    </span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Total allocated</span>
+                        <span class="fw-semibold">£${totalAllocated.toFixed(2)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Remaining budget</span>
+                        <span class="fw-semibold">${remainingBudget < 0 ? "-" : ""}£${Math.abs(remainingBudget).toFixed(2)}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Categories planned</span>
+                        <span class="fw-semibold">${plannedCategoryCount} / ${totalCategoryCount}</span>
+                    </div>
+                </div>
+
+                <div class="mt-3 p-2 rounded" style="background:#FBFAF8;">
+                    <div class="small">
+                        <span class="fw-semibold">Tip:</span>
+                        Remember to save your changes.
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // SPENDING INSIGHTS
+    function loadSpendingInsights() {
+        // get elements
+        const insightsBox = document.getElementById("budgetInsights");
+        if (!insightsBox) return;
+
+        const overallBudget = parseFloat(document.body.dataset.overallBudget) || 0;
+        const spendingAmountElements = document.querySelectorAll(".spending-amount");
+
+        // spending calculation
+        let totalSpent = 0;
+        let largestPayment = 0;
+
+        // largest paymement
+        spendingAmountElements.forEach(element => {
+            const value = parseFloat(element.textContent.replace(",", "")) || 0;
+            totalSpent += value; // add to total
+            if (value > largestPayment) largestPayment = value;
+        });
+
+        // calculate remaining budget
+        const remainingBudget = overallBudget - totalSpent;
+        const percentUsed = overallBudget > 0 ? Math.round((totalSpent / overallBudget) * 100) : 0;
+
+        // HTML summary
+        insightsBox.innerHTML = `
+            <div class="mb-3 p-2 border rounded" style="background:#fff;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>Spending Summary</strong>
+                        <div class="small text-muted">Based on payments you’ve logged</div>
+                    </div>
+                    <span class="badge ${remainingBudget < 0 ? "bg-danger" : "bg-success"}">
+                        ${remainingBudget < 0 ? "Over budget" : "On track"}
+                    </span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Total spent</span>
+                        <span class="fw-semibold">£${totalSpent.toFixed(2)}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Remaining budget</span>
+                        <span class="fw-semibold" style="color:${remainingBudget < 0 ? "var(--red)" : "var(--navy)"};">
+                            ${remainingBudget < 0 ? "-" : ""}£${Math.abs(remainingBudget).toFixed(2)}
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Budget used</span>
+                        <span class="fw-semibold">${percentUsed}%</span>
+                    </div>
+                    
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar ${remainingBudget < 0 ? "bg-danger" : "bg-success"}"
+                            role="progressbar"
+                            style="width: ${Math.min(percentUsed, 100)}%;"
+                            aria-valuenow="${Math.min(percentUsed, 100)}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+
+                    <div class="small text-muted mt-1">
+                        ${overallBudget > 0 ? `£${totalSpent.toFixed(2)} of £${overallBudget.toFixed(2)}` : "No overall budget set"}
+                    </div>
+
+                    <div class="d-flex justify-content-between small">
+                        <span class="text-muted">Largest payment</span>
+                        <span class="fw-semibold">£${largestPayment.toFixed(2)}</span>
+                    </div>
+                </div>
+
+            </div>
+        `;
+    }
+
+    // COMPARE INSIGHTS (non ai)
+    async function loadBudgetInsights() {
+        insightsBox.innerHTML = "Loading...";
+
+        const res = await fetch("/budget-insights");
+        const data = await res.json(); // convert to js object
+
+        // error handling
+        if (!res.ok) {
+            insightsBox.textContent = data.error || "Error.";
+            return;
+        }
+
+        // render html
+        insightsBox.innerHTML = "";
+
+        // ai summary html
+        if (data.summary) {
+            const summary = document.createElement("div");
+            summary.className = "mb-3 p-2 bg-light rounded";
+            summary.innerHTML = `
+            <strong>Summary</strong>
+            <div class="small text-muted">${data.summary}</div>
+            `;
+            insightsBox.appendChild(summary);
+        }
+
+        // insight cards
+        const items = data.items || [];
+        items.forEach(item => {
+            // risk badge
+            let badgeClass = "bg-success";
+            if (item.risk === "medium") badgeClass = "bg-warning text-dark";
+            if (item.risk === "high") badgeClass = "bg-danger";
+
+            // card html
+            const card = document.createElement("div");
+            card.className = "mb-3 p-2 border rounded";
+
+            card.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <strong>${item.vendor_name}</strong>
+                <span class="badge ${badgeClass}">${item.risk}</span>
+            </div>
+            <div class="small text-muted">${item.vendor_type}</div>
+            <div class="fw-semibold small mt-1">${item.title}</div>
+            <ul class="small mb-0 mt-1">
+                ${item.bullets.map(b => `<li>${b}</li>`).join("")}
+            </ul>
+            `;
+
+            insightsBox.appendChild(card);
+        });
+    };
+
+    // AI INSIGHTS
+    if (aiBtn && currentTab === "compare") { // compare tab only
+        aiBtn.addEventListener("click", async () => {
+        insightsBox.innerHTML = "Loading...";
+
+        const res = await fetch("/budget-ai-insights");
+        const data = await res.json(); // convert to js object
+
+        // error handling
+        if (!res.ok) {
+            insightsBox.textContent = data.error || "Error.";
+            return;
+        }
+
+        insightsBox.innerHTML = "";
+
+        // summary
+        if (data.summary) {
+            const summary = document.createElement("div");
+            summary.className = "mb-3 p-2 bg-light rounded";
+            summary.innerHTML = `
+            <strong>Summary</strong>
+            <div class="small text-muted">${data.summary}</div>
+            `;
+            insightsBox.appendChild(summary);
+        }
+
+        // ai strategy suggestion
+        if (data.strategy) {
+            const strategy = document.createElement("div");
+            strategy.className = "mb-3 p-2 border rounded";
+            // replace newlines with <br>
+            strategy.innerHTML = `
+            <strong>Strategy</strong>
+            <div class="small text-muted mt-1">${data.strategy.replace(/\n/g, "<br>")}</div> 
+            `;
+            insightsBox.appendChild(strategy);
+        }
+
+        // insight cards
+        const items = data.items || [];
+        items.forEach(item => {
+            // risk badge
+            let badgeClass = "bg-success";
+            if (item.risk === "medium") badgeClass = "bg-warning text-dark";
+            if (item.risk === "high") badgeClass = "bg-danger";
+
+            const card = document.createElement("div");
+            card.className = "mb-3 p-2 border rounded";
+
+            // card html
+            card.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <strong>${item.vendor_name}</strong>
+                <span class="badge ${badgeClass}">${item.risk}</span>
+            </div>
+            <div class="small text-muted">${item.vendor_type}</div>
+            <div class="fw-semibold small mt-1">${item.title}</div>
+            <ul class="small mb-0 mt-1">
+                ${item.bullets.map(b => `<li>${b}</li>`).join("")}
+            </ul>
+            `;
+
+            insightsBox.appendChild(card);
+        });
+        });
+    }
+    
+    // CHANGE TAB   
+    // plan insights
+    if (currentTab === "plan"){
+        loadPlanInsights();
+    }
+
+    // spending insights
+    if (currentTab === "spending") {
+        loadSpendingInsights();
+    }
+
+    // compare insights
+    if (currentTab === "compare"){
+        loadBudgetInsights();
+    }
+    </script>
+  </body>
+</html>

@@ -1,5 +1,7 @@
 from database import db
 
+# DATABASE MODELS
+
 class User(db.Model):
     __tablename__ = "user"
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -7,6 +9,7 @@ class User(db.Model):
 
     # relationships
     events = db.relationship("Event", back_populates="user")
+
 
 class Event(db.Model):
     __tablename__ = "event"
@@ -47,7 +50,7 @@ class EventChecklist(db.Model):
     checklist_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     event_id = db.Column(db.Integer, db.ForeignKey("event.event_id"), nullable=False)
     vendor_type_id = db.Column(db.Integer, db.ForeignKey("vendor_type.vendor_type_id"), nullable=False)
-    is_booked = db.Column(db.Boolean, default=False)
+    is_complete = db.Column(db.Boolean, default=False)
 
     # relationships
     event = db.relationship("Event", back_populates="checklist_items")
@@ -72,8 +75,29 @@ class VendorInteractions(db.Model):
     user_notes = db.Column(db.Text)
     price = db.Column(db.Numeric(10,2))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    is_booked = db.Column(db.Boolean, default=False)
+    booked_at = db.Column(db.DateTime, nullable=True)
 
     user = db.relationship("User")
     event = db.relationship("Event")
     vendor_type = db.relationship("VendorType")
     
+class VendorBudget(db.Model):
+    __tablename__ = "vendor_budget"
+    budget_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer, db.ForeignKey("event.event_id"), nullable=False)
+    vendor_type_id = db.Column(db.Integer, db.ForeignKey("vendor_type.vendor_type_id"), nullable=False)
+    target_budget = db.Column(db.Numeric(10,2))
+
+    vendor_type = db.relationship("VendorType")
+    event = db.relationship("Event")
+
+class Spending(db.Model):
+    __tablename__ = "Spending"
+    spending_id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey("event.event_id"), nullable=False)
+    vendor_type_id = db.Column(db.Integer, db.ForeignKey("vendor_type.vendor_type_id"))
+    vendor_interaction_id = db.Column(db.Integer, db.ForeignKey("vendor_interactions.vendor_id"))
+    description = db.Column(db.String(255), nullable=False)
+    amount = db.Column(db.Numeric(10,2), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())

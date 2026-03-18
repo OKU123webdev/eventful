@@ -26,11 +26,6 @@
     />
 
     {% block api %}{% endblock %}
-    <!-- Google Places -->
-    <!-- <script async
-        src="https://maps.googleapis.com/maps/api/js?key={{ google_api }}&loading=async&libraries=places&callback=initMap">
-    </script> -->
-
     <!-- CSS -->
     <link
       rel="stylesheet"
@@ -40,7 +35,10 @@
   </head>
 
   <body>
+    <!-- logout btn -->
     <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+    
+    <!-- main content -->
     <main class="new-event">
       <div class="card-frame">
         <div class="cream-card animate">
@@ -62,7 +60,6 @@
               <div class="right-content">
                 <div class="right-wrap {% block center %}{% endblock %}">
                   <!-- step -->
-
                   {% block steps %}
                     <div class="step-nav mb-2">
                       <span class="step-count">Step {{ step }} of 3</span>
@@ -76,13 +73,10 @@
                         To-Do List
                       </span>
                     </div>
-
                     <!-- divider -->
                     <hr>
                   {% endblock  %}
                   
-                  
-
                   <!-- heading -->
                   <h1 class="newEvent_title mb-3">
                     {% block events_heading %}MY EVENTS{% endblock %}

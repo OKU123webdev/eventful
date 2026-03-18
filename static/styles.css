@@ -20,6 +20,20 @@ body {
     background-color: #F5F5F5 ;
 }
 
+/* back button */
+.back-btn{
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  font-size: 1.5rem;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.back-icon:hover{
+  color: var(--gold);
+}
+
 /*............... INDEX ................*/
 /* hero video */
 .video-bg {
@@ -476,8 +490,6 @@ gmp-place-autocomplete.form-control {
   accent-color: #B89A6A !important;
 }
 
-
-
 /* list items */
 .eventType .list-group-item{
   border-bottom: 1px solid var(--navy);
@@ -511,11 +523,6 @@ gmp-place-autocomplete.form-control {
 .todolist{
   font-family: "Lato", sans-serif;
 }
-
-/* .todolist-list{
-  text-align: right;
-
-} */
 
 input[type="checkbox"] {
   accent-color: var(--navy);
@@ -553,7 +560,7 @@ input[type="checkbox"] {
   background-color: var(--gold);
 }
 
-/* .................... my events ................... */
+/* .................... MY EVENTS ................... */
 .scroll-events{
   max-height: 180px;
   overflow-y: auto;
@@ -585,13 +592,6 @@ input[type="checkbox"] {
 }
 
 .newEvent_btn{
-  /* border-radius: 10px; */
-  /* border: 2px solid var(--gold);
-  color: var(--gold);
-  width: 140px;
-  border-radius: 5px;
-  padding: 5px 0px;
-  font-weight: bold; */
   border: 3px solid var(--gold);
   color: white;
   background-color: var(--gold);
@@ -605,12 +605,11 @@ input[type="checkbox"] {
 /* ................... EVENT DASHBOARD .................. */
 .event-dashboard{
   background-color: #f5f5f5;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 
 /* NAVBAR */
-
 .navbar{
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
@@ -646,7 +645,6 @@ input[type="checkbox"] {
 }
 
 /* DASHBOARD - LEFT */
-
 .dash-left-wrap{
   background-color:#FBFAF8;
   border-radius: 14px;
@@ -826,8 +824,6 @@ input[type="checkbox"] {
   color: white;
 }
 
-
-
 /* GUESLIST (DASHBOARD CARD) */
 .guests{
   display: flex;
@@ -964,7 +960,7 @@ input[type="checkbox"] {
 /* ................ VENDOR DIRECTORY .................. */
 
 .vendor_directory{
-  background-color: var(--main-bg);
+  background-color: var(--grey-bg);
   font-family: "Lato", sans-serif;
 }
 
@@ -982,6 +978,22 @@ input[type="checkbox"] {
 
 .star-icon{
   color: var(--gold);
+}
+
+
+/* nicer padding / row separation */
+.myVendors_table table{
+  margin-bottom: 0;
+}
+
+.myVendors_table td{
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+/* keep actions in one line */
+.myVendors_table td:last-child{
+  white-space: nowrap;
 }
 
 /* buttons */
@@ -1021,10 +1033,7 @@ input[type="checkbox"] {
   object-position: center; 
 }
 
-
-
 /* CARDS */
-
 /* hover effect */
 .vendor_directory .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -1058,11 +1067,11 @@ input[type="checkbox"] {
 }
 
 
-/* Base style for both pagination buttons */
+/* pagination buttons */
 .pagination-btn {
     min-width: 160px;
     height: 50px;
-    border-radius: 30px !important; /* Forces the pill shape */
+    border-radius: 30px !important;
     font-weight: bold;
     display: inline-flex;
     align-items: center;
@@ -1070,21 +1079,468 @@ input[type="checkbox"] {
     transition: all 0.3s ease;
 }
 
-/* Specific style for the solid 'Next' button */
+/* Next button */
 .next-btn {
     background-color: #2D3E50 !important;
     color: white !important;
     border: none !important;
 }
-
-/* Optional: Subtle hover effect for the solid button */
 .next-btn:hover {
     background-color: #1a2531 !important;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Ensuring the outline button matches the weight */
 .btn-outline-secondary.pagination-btn {
     border-width: 2px;
 }
 
+/* -------- Vendor Directory: AI Recommendation Card -------- */
+
+.vendorDirectory_aiWrap{
+  font-family: "Lato", sans-serif;
+}
+
+/* ai btn */
+.vendorDirectory_aiBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--navy);
+  color: white;
+  border: 2px solid var(--navy);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.vendorDirectory_aiBtn:hover{
+  background-color:#263652;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+  color: white;
+}
+
+/* main card */
+.vendorDirectory_aiCard{
+  background-color:#FBFAF8;
+  border-radius: 14px;
+  border: 1px solid rgba(153, 125, 93, 0.45);
+  box-shadow: 0 10px 26px rgba(21, 31, 49, 0.12);
+  overflow: hidden;
+}
+
+/* navy header */
+.vendorDirectory_aiHead{
+  background-color: var(--navy);
+  color: white;
+  padding: 14px 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vendorDirectory_aiTitle{
+  font-family: "Playfair Display", serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.vendorDirectory_aiHint{
+  font-size: 0.9rem;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* body */
+.vendorDirectory_aiBody{
+  padding: 16px 18px 18px;
+}
+
+/* results layout */
+.vendorDirectory_aiResults{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ai pick */
+.vendorDirectory_aiPick{
+  background-color: #FAF9F6;
+  border: 1px solid rgba(153, 125, 93, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 18px rgba(21, 31, 49, 0.06);
+}
+
+.vendorDirectory_aiPickTop{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.vendorDirectory_aiPickName{
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 1.05rem;
+}
+
+.vendorDirectory_aiScore{
+  background: rgba(21,31,49,0.08);
+  border: 1px solid rgba(21,31,49,0.12);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.vendorDirectory_aiLine{
+  margin-top: 8px;
+  color: rgba(21,31,49,0.82);
+  line-height: 1.35;
+}
+
+.vendorDirectory_aiLabel{
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.vendorDirectory_aiSummary{
+  border-top: 1px solid rgba(21,31,49,0.10);
+  padding-top: 12px;
+  color: rgba(21,31,49,0.85);
+  line-height: 1.45;
+}
+
+/* responsive */
+@media (max-width: 576px){
+  .vendorDirectory_aiHead{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .vendorDirectory_aiHint{
+    white-space: normal;
+  }
+}
+
+
+/* .................. VENDOR DETAILS .................... */
+/* page background */
+.vendor_details_page{
+  background: var(--grey-bg);
+}
+
+/* sticky footer */
+body.vendor_details_page{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body.vendor_details_page > .container{
+  flex: 1;
+}
+
+/* header row */
+.vendorDetails_headerRow{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  gap: 16px;
+}
+
+.vendorDetails_title{
+  font-family: "Playfair Display", serif;
+  color: var(--navy);
+  font-size: 2.4rem;
+  margin: 0;
+}
+
+.vendorDetails_ratingRow{
+  font-size: 0.95rem;
+  color: rgba(21,31,49,0.7);
+}
+
+.vendorDetails_star{
+  color: var(--gold);
+}
+
+
+/* card */
+.vendorDetails_card{
+  border: 1px solid rgba(21,31,49,0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(21,31,49,0.06);
+  overflow: hidden;
+  background: #fff;
+}
+
+.vendorDetails_cardBody{
+  padding: 1rem;
+}
+
+.vendorDetails_sectionTitle{
+  font-family: "Playfair Display", serif;
+  color: var(--navy);
+}
+
+/* photo */
+.vendorDetails_photo{
+  height: 260px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* info icons */
+.vendorDetails_infoIcon{
+  color: var(--gold);
+  margin-right: 6px;
+}
+
+/* google maps */
+.vendorDetails_googleMaps{
+  width: 100%;
+  height: 260px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+
+/* favourite */
+.vendorDetails_favouriteWrap{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.vendorDetails_favouriteBtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(21,31,49,0.15);
+  background: #fff;
+  font-weight: 500;
+}
+
+.vendorDetails_favouriteBtn i{
+  color: var(--gold);
+}
+
+.vendorDetails_favouriteBtn_disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.vendorDetails_favouriteHint{
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* helper box */
+.vendorDetails_helpBox{
+  background: #f3efe6;
+  border: 1px solid #e6dfd2;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+/* currency input */
+.vendorDetails_currencyGroup .input-group-text{
+  background: var(--navy);
+  color: #fff;
+  border: none;
+}
+
+/* save button */
+.vendorDetails_saveBtn{
+  background: var(--gold);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vendorDetails_saveBtn:hover{
+  background: var(--darkGold);
+  color: #fff;
+}
+
+/* reviews */
+.vendorDetails_reviewsBlock{
+  border-top: 0;
+}
+
+.vendorDetails_reviewCard{
+  border: 1px solid #e6dfd2;
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.vendorDetails_reviewText{
+  overflow: auto;
+  line-height: 1.4;
+}
+
+.vendorDetails_reviewAuthor{
+  font-weight: 600;
+}
+
+.vendorDetails_reviewTime{
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.vendorDetails_reviewRating{
+  font-weight: 600;
+}
+
+/* review controls */
+.vendorDetails_reviewControls{
+  display: flex;
+  gap: 8px;
+}
+
+.vendorDetails_reviewBtn{
+  border: 1px solid #e6dfd2;
+  background: #fff;
+  border-radius: 999px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.vendorDetails_reviewBtn:hover{
+  opacity: 0.8;
+}
+
+/* hide bootstrap arrows */
+#reviewsCarousel .carousel-control-prev,
+#reviewsCarousel .carousel-control-next{
+  display: none !important;
+}
+
+/* footer */
+.vendorDetails_footer{
+  background-color: #1A2533;
+  color: white;
+  padding: 10px 0;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  font-family: "Purple Purse", serif;
+}
+
+/* .............. BUDGET PLANNER ................ */
+/* plan/compare/myspending tabs */
+.budgetTab{
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 14px;
+  text-decoration: none;
+  background: #FBFAF8;
+  border: 1px solid rgba(153, 125, 93, 0.35);
+  box-shadow: 0 10px 26px rgba(21, 31, 49, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.budgetTab:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(21, 31, 49, 0.16);
+}
+
+.budgetTab-active{
+  background: var(--navy);
+  border-color: var(--navy);
+}
+
+.budgetTab-icon{
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(153, 125, 93, 0.20);
+}
+
+.budgetTab-icon i{
+  font-size: 1.5rem;
+  color: var(--gold);
+}
+
+.budgetTab-title{
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  color: var(--navy);
+  line-height: 1.1;
+}
+
+.budgetTab-subtitle{
+  font-family: "Lato", sans-serif;
+  font-size: 0.9rem;
+  color: rgba(21,31,49,0.75);
+}
+
+/* active tab */
+.budgetTab-active .budgetTab-title,
+.budgetTab-active .budgetTab-subtitle{
+  color: white;
+}
+
+.table td:last-child{
+  white-space: nowrap;
+}
+
+/* compare - filter */
+.budget-filter-select{
+  border-radius: 12px;
+  padding: 8px 14px;
+  background-color: white;
+  box-shadow: 0 6px 18px rgba(21, 31, 49, 0.08);
+  font-family: "Lato", sans-serif;
+}
+
+/* warning colour */
+tr.quote-ok > td { background-color: #e5f6ea !important; }
+tr.quote-warn > td { background-color: #fbf1dc !important; }
+tr.quote-over > td { background-color: #fadcdc !important; }
+
+/* tooltip */
+.quote-info-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.quote-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.card.border-success { box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.12); }

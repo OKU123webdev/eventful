@@ -1,0 +1,277 @@
+{% extends "Budget/budgetPlanner_layout.html" %}
+{% block title %}Budget – Compare{% endblock %}
+
+{% block content %}
+<div id="comparePage">
+
+  <!-- LEFT SECTION -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- heading -->
+    <h2 class="nextTask-title mb-0">Compare Quotes</h2>
+    <!-- add quote button -->
+    <button class="btn nextTask-btn" type="button">
+      Add Quote <i class="bi bi-plus-lg"></i>
+    </button>
+  </div>
+
+  <!-- intro text -->
+  <p class="text-muted mb-3" style="font-family:'Lato', sans-serif;">
+    Review the quotes you’ve saved so far and compare pricing.
+  </p>
+
+  <!-- FILTER/SORT row-->
+  <div class="d-flex align-items-center gap-4 mb-4" style="font-family:'Lato',sans-serif;">
+
+    <!-- Filter by type -->
+    <form method="GET" action="{{ url_for('budgetPlanner') }}">
+      <input type="hidden" name="tab" value="compare">
+
+      {% if sort_by %}
+        <input type="hidden" name="sort_by" value="{{ sort_by }}">
+      {% endif %}
+
+      <select
+        name="vendor_type_id"
+        class="budget-filter-select"
+        onchange="this.form.submit()"
+      >
+        <option value="">All vendor types</option>
+
+        {% for vt in event_vendor_types %}
+          <option
+            value="{{ vt.vendor_type_id }}"
+            {% if selected_vendor_type_id == vt.vendor_type_id %}selected{% endif %}
+          >
+            {{ vt.vendor_type }}
+          </option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <!-- Sort By Price -->
+    <form method="GET" action="{{ url_for('budgetPlanner') }}">
+      <input type="hidden" name="tab" value="compare">
+
+      {% if selected_vendor_type_id %}
+        <input type="hidden" name="vendor_type_id" value="{{ selected_vendor_type_id }}">
+      {% endif %}
+
+      <select
+        name="sort_by"
+        class="budget-filter-select"
+        onchange="this.form.submit()"
+      >
+        <option value="">Sort by</option>
+        <!-- sort - price low -->
+        <option value="price_low"
+          {% if sort_by == "price_low" %}selected{% endif %}>
+          Price: Low to High
+        </option>
+
+        <!-- sort - price high -->
+        <option value="price_high"
+          {% if sort_by == "price_high" %}selected{% endif %}>
+          Price: High to Low
+        </option>
+      </select>
+    </form>
+
+    <!-- ai btn -->
+    <button id="aiBtn" class="btn nextTask-btn" type="button">
+      Get AI suggestions <i class="bi bi-magic"></i>
+    </button>
+
+
+  </div>
+
+
+  <!-- UNBOOKED QUOTES -->
+  <div class="card dash-eventDetails mt-2">
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle">
+        <!-- table head -->
+        <thead class="myVendors_table">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Quote</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+
+        <!-- table body -->
+        <tbody>
+          <!-- no quotes -->
+          {% if other_quotes|length == 0 %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">
+                No quotes saved yet.
+              </td>
+            </tr>
+          <!-- loop through quotes -->
+          {% else %}
+            {% for q in other_quotes %}
+              {% set info = insights.get(q.vendor_id) %}
+              <tr class="{{ info.row_class if info else '' }}">
+
+                <!-- vendor name -->
+                <td>
+                  {{ q.vendor_name }}
+                  {% if q.is_favourite %}
+                    <i class="bi bi-star-fill star-icon ms-1"></i>
+                  {% endif %}
+                </td>
+
+                <!-- vendor type -->
+                <td>{{ q.vendor_type.vendor_type }}</td>
+
+                <!-- price -->
+                <td>
+                  {% if q.price is not none %}
+
+                    <div class="quote-inline">
+                      <span class="fw-bold">
+                        £{{ "%.2f"|format(q.price) }}
+                      </span>
+
+                      {% if info and info.tooltip %}
+                        <span
+                          class="quote-info-circle"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          data-bs-container="body"
+                          title="{{ info.tooltip }}"
+                        >
+                          i
+                        </span>
+                      {% endif %}
+                    </div>
+
+                  {% else %}
+                    <span class="text-muted">No quote yet</span>
+                  {% endif %}
+                </td>
+
+
+                <!-- actions -->
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2">
+                    <!-- view/vendor details link -->
+                    <a
+                      class="btn btn-action"
+                      href="{{ url_for('vendor_details',
+                        place_id=q.vendor_place_id,
+                        vendor_type=q.vendor_type.vendor_type) }}"
+                    >
+                      View
+                    </a>
+                    <!-- edit -->
+                    <button class="btn btn-action" type="button">Edit</button>
+                    <!-- remove -->
+                    <button class="btn btn-action" type="button">Remove</button>
+
+                    <!-- MARK AS BOOKED -->
+                    <form method="POST" action="{{ url_for('vendor_booking') }}" class="d-inline">
+                      <input type="hidden" name="vendor_id" value="{{ q.vendor_id }}">
+                      <button class="btn btn-action book" type="submit">
+                        Book
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOOKED QUOTES -->
+  {% if booked_quotes|length > 0 %}
+
+    <!-- table heading -->
+    <div class="mt-5 mb-2">
+      <h5 style="font-family:'Playfair Display',serif;">
+        Booked Vendors
+      </h5>
+    </div>
+
+    <div class="card dash-eventDetails">
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <!-- table head -->
+          <thead class="myVendors_table">
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Quote</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+
+          <!-- table body -->
+          <tbody>
+            {% for q in booked_quotes %}
+              <tr class="table-light">
+                <td>
+                  <!-- vendor name -->
+                  {{ q.vendor_name }}
+                  <!-- booked badge -->
+                  <span class="badge ms-2" style="background: var(--gold);">
+                    Booked
+                  </span>
+                  <!-- favourite -->
+                  {% if q.is_favourite %}
+                    <i class="bi bi-star-fill star-icon ms-1"></i>
+                  {% endif %}
+                </td>
+
+                <!-- vendor type -->
+                <td>{{ q.vendor_type.vendor_type }}</td>
+
+                <!-- price -->
+                <td>
+                  {% if q.price is not none %}
+                    £{{ "%.2f"|format(q.price) }}
+                  {% else %}
+                    <span class="text-muted">No quote yet</span>
+                  {% endif %}
+                </td>
+
+                <!-- actions -->
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-2">
+                    <!-- view/vendor details link -->
+                    <a
+                      class="btn btn-action"
+                      href="{{ url_for('vendor_details',
+                        place_id=q.vendor_place_id,
+                        vendor_type=q.vendor_type.vendor_type) }}"
+                    >
+                      View
+                    </a>
+
+                    <!-- unbook -->
+                    <form method="POST" action="{{ url_for('vendor_booking') }}" class="d-inline">
+                      <input type="hidden" name="vendor_id" value="{{ q.vendor_id }}">
+                      <button class="btn btn-action book" type="submit">
+                        Unbook
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+  
+  {% endif %}
+</div>
+
+
+
+{% endblock %}

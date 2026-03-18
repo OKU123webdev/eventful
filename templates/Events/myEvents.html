@@ -9,6 +9,7 @@
 {# center content #}
 {% block center %} center-content {% endblock %}
 
+<!-- steps -->
 {% block steps %}
     <span class="step-item active">
         My Events
@@ -22,12 +23,10 @@
 {# user events selection #}
 {% block event_content %}
 <form method="POST">
-    
-
-
     <p>Select an event to continue planning or create a new event.</p>
     <div class="form-wrap">
         <div class="scroll-events">
+            <!-- list of users events -->
             <ul class="list-group eventType">
                 {% for e in events %}
                 <li class="list-group-item list-group-item-action">
@@ -40,7 +39,6 @@
                 {% endfor %}
             </ul>
         </div>
-
 
         <!-- SUBMIT -->
         <div class="d-flex justify-content-center justify-content-lg-end pt-3">
