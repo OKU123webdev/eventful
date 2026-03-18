@@ -22,3 +22,25 @@ API Integrations: Auth0, Google Maps API, Google Places API, OpenAI API
 
 ## Project Status
 This application is currently under active development and additional features are still being implemented.
+
+## Screenshots
+### Event Dashboard
+![Event Dashboard](screenshots/eventDashboard.png)
+
+### Create New Event
+![Create Event](screenshots/newEvent.png)
+
+### Vendor Directory
+![Vendor Directory](screenshots/vendorDirectory.png)
+
+### Vendor Recommendations
+![Vendor Recommendations](screenshots/vendorRec.png)
+
+### Budget Insights
+![Budget Insights](screenshots/budgetInsights.png)
+
+### Spending Insights
+![Spending Insights](screenshots/spendingInsights.png)
+
+### Vendor Comparison
+![Vendor Comparison](screenshots/compareInsights.png)
