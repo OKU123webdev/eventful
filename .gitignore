@@ -12,3 +12,6 @@ __pycache__/
 *.mwbin
 *.mwb
 *.myl
+
+# img cache
+static/vendor_cache/
