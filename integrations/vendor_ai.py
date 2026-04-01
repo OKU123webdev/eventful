@@ -61,7 +61,7 @@ def ai_rank_vendors(client, event_type: str, vendor_type: str, vendors: list[dic
                     "Use ONLY the provided vendor data. Do NOT invent reviews, prices, or details.\n\n"
 
                     "IMPORTANT:\n"
-                    "- When explaining WHY a vendor ranks highly, reference specific points from the provided reviews text.\n"
+                    "- When explaining why a vendor ranks highly, reference specific points from the provided reviews text.\n"
                     "- Summarise common themes from reviews (e.g. staff friendliness, food quality, organisation, atmosphere).\n"
                     "- If quoting or paraphrasing reviews, use only what appears in the provided review text.\n"
                     "- If reviews are limited or vague, explicitly mention that as a risk.\n"
@@ -83,7 +83,7 @@ def ai_rank_vendors(client, event_type: str, vendor_type: str, vendors: list[dic
                     "- Keep explanations concise but evidence-based.\n"
                 ),
             },
-                        {
+            {
                 "role": "user",
                 "content": (
                     f"Event type: {event_type}\n"

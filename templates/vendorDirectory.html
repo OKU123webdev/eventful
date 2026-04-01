@@ -156,7 +156,14 @@
                         <div class="card h-100 shadow-sm border-0" data-vendor-id="{{ vendor.place_id }}">
                             <a href="{{ url_for('vendor_details', place_id=vendor.place_id, vendor_type=vendor_type) }}" class="text-decoration-none text-dark">
                                 <!-- vendor image -->
-                                <img src="{{ vendor.image_url if vendor.image_url else url_for('static', filename='images/placeholder.jpg') }}" class="vendor_img card-img-top" alt="{{ vendor.name }}" loading="lazy">
+                                <img
+                                    src="{% if vendor.photo_reference %}{{ url_for('vendor_photo', place_id=vendor.place_id, photo_reference=vendor.photo_reference) }}{% else %}{{ url_for('static', filename='images/placeholder.jpg') }}{% endif %}"
+                                    class="vendor_img card-img-top"
+                                    alt="{{ vendor.name }}"
+                                    loading="lazy"
+                                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/placeholder.jpg') }}';"
+                                >
+                                
                                 <!-- vendor details -->
                                 <div class="card-body d-flex flex-column">
                                     <div class="mb-3">

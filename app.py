@@ -1,9 +1,11 @@
 import json
+import os
+import requests
 from os import environ as env
 from urllib.parse import quote_plus, urlencode
 from authlib.integrations.flask_client import OAuth
 from dotenv import find_dotenv, load_dotenv
-from flask import Flask, redirect, render_template, session, url_for, request, jsonify
+from flask import Flask, redirect, render_template, session, url_for, request, jsonify, url_for, send_file
 from forms import EventDetailsForm
 from datetime import datetime
 from datetime import date
@@ -34,8 +36,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app) # Initilise db
 
+# CACHED PHOTO STORAGE
+PHOTO_CACHE_FOLDER = os.path.join(app.root_path, "static", "vendor_cache")
+os.makedirs(PHOTO_CACHE_FOLDER, exist_ok=True)
+
+
 # IMPORT MODELS
-from models import User, Event, EventType, VendorType, EventTypeVendors, EventChecklist, VendorInteractions, VendorBudget, Spending
+from models import User, Event, EventType, VendorType, EventTypeVendors, EventChecklist, VendorInteractions, Spending, Guest
 
 # IMPORT CRUD FUNCTIONS
 from vendors.vendor_crud import (
@@ -54,6 +61,13 @@ from budget.budget_crud import (
     save_budgets,
     add_spending_item,
     delete_spending_item
+)
+
+from guest_crud import (
+    add_guest,
+    get_guests,
+    update_guest_rsvp,
+    remove_guest
 )
 
 # budget calculations
@@ -374,6 +388,13 @@ def eventDashboard():
     # next rec task
     next_item=next((i for i in checklist_items if not i.is_complete), None)
 
+    # guest count
+    invited_count = Guest.query.filter_by(event_id=event_id).count()
+    rsvp_count = Guest.query.filter(
+        Guest.event_id == event_id,
+        Guest.rsvp_status == "Attending"
+    ).count()
+
     return render_template(
         "eventDashboard.html", 
         event=event, 
@@ -383,7 +404,9 @@ def eventDashboard():
         total_spent=total_spent,
         remaining_budget=remaining_budget,
         spend_percent=spend_percent,
-        next_item=next_item
+        next_item=next_item,
+        invited_count=invited_count,
+        rsvp_count=rsvp_count
     )
 
 # .................... VENDOR DIRECTORY .....................
@@ -506,6 +529,44 @@ def vendorDirectory():
         current_page=current_page,
         gmaps_api_key=GOOGLE_MAPS_API_KEY
     )
+
+# GOOGLE PLACES PHOTO CACHING
+@app.route("/vendor-photo/<place_id>")
+def vendor_photo(place_id):
+    photo_reference = request.args.get("photo_reference")
+
+    # no photo reference, use placeholder
+    if not photo_reference:
+        return redirect(url_for("static", filename="images/placeholder.jpg"))
+
+    # local saved file path
+    cached_file_path = os.path.join(PHOTO_CACHE_FOLDER, f"{place_id}.jpg")
+
+    # if already cached, return saved image
+    if os.path.exists(cached_file_path):
+        return send_file(cached_file_path, mimetype="image/jpeg")
+
+    # otherwise fetch from Google and save it
+    google_photo_url = (
+        "https://maps.googleapis.com/maps/api/place/photo"
+        f"?maxwidth=400"
+        f"&photo_reference={photo_reference}"
+        f"&key={GOOGLE_MAPS_API_KEY}"
+    )
+
+    try:
+        response = requests.get(google_photo_url, timeout=10)
+
+        if response.status_code == 200:
+            with open(cached_file_path, "wb") as image_file:
+                image_file.write(response.content)
+
+            return send_file(cached_file_path, mimetype="image/jpeg")
+
+    except Exception as e:
+        print("Error fetching vendor photo:", e)
+
+    return redirect(url_for("static", filename="images/placeholder.jpg"))
 
 # MARK INTERESTED
 @app.route("/mark-interested", methods=["POST"])
@@ -916,6 +977,108 @@ def budget_ai_insights():
 
     return jsonify(structured_output)
 
+# .................. GUESTLIST MANAGEMENT ...................
+@app.route("/guestlist", methods=["GET", "POST"])
+def guestlist():
+
+    # session data
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+    event_id = session.get("event_id")
+
+    if not event_id:
+        return redirect(url_for("my_events"))
+
+    # event query
+    event = Event.query.filter_by(event_id=event_id, user_id=user_id).first()
+    if not event:
+        return redirect(url_for("my_events"))
+
+    # POST
+    if request.method == "POST":
+        # search/filter guestlist
+        action = request.form.get("action")
+        search = request.form.get("search", "").strip()
+        status_filter = request.form.get("status", "").strip()
+
+        # add guest
+        if action == "add_guest":
+            firstname = request.form.get("firstname")
+            lastname = request.form.get("lastname")
+            email = request.form.get("email")
+            rsvp_status = request.form.get("rsvp_status", "Pending")
+
+            if firstname and lastname:
+                add_guest(
+                    event_id=event_id,
+                    firstname=firstname,
+                    lastname=lastname,
+                    email=email,
+                    rsvp_status=rsvp_status
+                )
+
+        # update rsvp
+        elif action == "update_rsvp":
+            guest_id = request.form.get("guest_id", type=int)
+            rsvp_status = request.form.get("rsvp_status")
+
+            if guest_id and rsvp_status:
+                update_guest_rsvp(
+                    guest_id=guest_id,
+                    event_id=event_id,
+                    rsvp_status=rsvp_status
+                )
+
+        # delete guest
+        elif action == "remove_guest":
+            guest_id = request.form.get("guest_id", type=int)
+
+            if guest_id:
+                remove_guest(
+                    guest_id=guest_id,
+                    event_id=event_id
+                )
+
+        return redirect(url_for("guestlist", search=search, status=status_filter))
+
+    # get query parameters (search/filter/edit)
+    search = request.args.get("search", "").strip()
+    status_filter = request.args.get("status", "").strip()
+    edit_guest = request.args.get("edit_guest", type=int)
+
+    # get guests
+    guests = get_guests(
+        event_id=event_id,
+        search=search,
+        status_filter=status_filter
+    )
+
+    # count invited/attending/declined
+    invited_count = Guest.query.filter_by(event_id=event_id).count()
+    attending_count = Guest.query.filter(
+        Guest.event_id == event_id,
+        Guest.rsvp_status == "Attending"
+    ).count()
+    declined_count = Guest.query.filter(
+        Guest.event_id == event_id,
+        Guest.rsvp_status == "Declined"
+    ).count()
+
+    return render_template(
+        "guestlist.html",
+        event=event,
+        guests=guests,
+        edit_guest=edit_guest,
+        search=search,
+        status_filter=status_filter,
+        invited_count=invited_count,
+        attending_count=attending_count,
+        declined_count=declined_count
+    )
+
 if __name__ == "__main__":
     app.run(host="localhost", port=5000, debug=True)
+
 

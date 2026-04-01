@@ -46,15 +46,13 @@ def search_nearby_vendors(lat, lng, vendor_type, event_type, radius=5000, page_t
             for place in results:
                 photos = place.get("photos")
                 if photos:
-                    place["image_url"] = get_place_image(
-                        photos[0].get("photo_reference")
-                    )
+                    place["photo_reference"] = photos[0].get("photo_reference")
                 else:
-                    place["image_url"] = None
+                    place["photo_reference"] = None
             return results, next_token
         else:
             print("Error searching nearby vendors:", response.get("status"))
-            return []
+            return [], None
     # validation error    
     except Exception as e:
         print("Exception occurred while searching nearby vendors:", e)

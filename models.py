@@ -101,3 +101,19 @@ class Spending(db.Model):
     description = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Numeric(10,2), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+class Guest(db.Model):
+    __tablename__ = "guest"
+
+    guest_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    event_id = db.Column(db.Integer, db.ForeignKey("event.event_id"), nullable=False)
+    firstname = db.Column(db.String(100))
+    lastname = db.Column(db.String(100))
+    email = db.Column(db.String(255))
+    rsvp_status = db.Column(db.String(50), default="Pending")
+
+    event = db.relationship("Event", backref="guests")
+
+    @classmethod
+    def show_guests(cls, event_id):
+        return cls.query.filter_by(event_id=event_id).all()

@@ -179,7 +179,7 @@
                     <div class="guests">
                       <div class="guestsNo">
                         <!-- invited -->
-                        <span class="number">42</span>
+                        <span class="number">{{ invited_count }}</span>
                         <span class="label">Invited</span>
                       </div>
 
@@ -188,16 +188,16 @@
 
                       <!-- rsvp -->
                       <div class="guestsNo">
-                        <span class="number">23</span>
+                        <span class="number">{{ rsvp_count }}</span>
                         <span class="label">RSVP</span>
                       </div>
                     </div>
 
                     <!-- guestline link -->
-                    <button class="btn nextTask-btn mt-2">
-                       Guestlist management
+                    <a href="{{ url_for('guestlist') }}" class="btn nextTask-btn mt-2">
+                      Guestlist management
                       <i class="bi bi-arrow-right"></i>
-                    </button>
+                    </a>
                   </div>
                 </div>
               </div>
