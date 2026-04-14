@@ -56,7 +56,7 @@ def search_nearby_vendors(lat, lng, vendor_type, event_type, radius=5000, page_t
     # validation error    
     except Exception as e:
         print("Exception occurred while searching nearby vendors:", e)
-        return []
+        return [], None
     
 # get place images
 def get_place_image(photo_reference, max_width=400):
